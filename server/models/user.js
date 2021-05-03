@@ -7,7 +7,7 @@ module.exports = class User extends Model {
       {
         email: {
           type: DataTypes.STRING(30), // STRING, TEXT, BOOLEAN, INTEGER, FLOAT, DATETIME
-          allowNull: false, // 필수
+          allowNull: true,
           unique: true, // 고유한 값
         },
         nickname: {
@@ -16,17 +16,29 @@ module.exports = class User extends Model {
         },
         image: {
           type: DataTypes.STRING(200),
+          allowNull: true,
         },
         introduction: {
           type: DataTypes.STRING(200),
+          allowNull: true,
         },
         password: {
           type: DataTypes.STRING(72),
-          allowNull: false, // 필수
+          allowNull: true,
+        },
+        provider: {
+          type: DataTypes.STRING(10),
+          allowNull: false,
+          defaultValue: 'local',
+        },
+        snsId: {
+          type: DataTypes.STRING(30),
+          allowNull: true,
         },
         status: {
           type: DataTypes.TINYINT,
           // 0 : pending, 1 : authenticated
+          allowNull: false,
           defaultValue: 0,
         },
         // token: {
@@ -38,6 +50,7 @@ module.exports = class User extends Model {
           // manager 1
           // normal 0
           type: DataTypes.INTEGER,
+          allowNull: false,
           defaultValue: 0,
         },
       },

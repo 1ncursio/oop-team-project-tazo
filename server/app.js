@@ -13,6 +13,7 @@ const hpp = require('hpp');
 const helmet = require('helmet');
 
 const userRouter = require('./routes/user');
+const authRouter = require('./routes/auth');
 
 const db = require('./models');
 
@@ -77,6 +78,7 @@ app.get('/oauth', passport.authenticate('kakao'), (req, res) => {
 });
 
 app.use('/user', userRouter);
+app.use('/auth', authRouter);
 
 app.listen(process.env.PORT, () => {
   console.log(`server listening at ${process.env.PORT} port...`);
