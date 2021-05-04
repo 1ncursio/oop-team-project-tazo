@@ -4,18 +4,35 @@ import useInput from '@hooks/useInput';
 import axios from 'axios';
 import useSWR from 'swr';
 import fetcher from '@utils/fetcher';
-import { useHistory } from 'react-router';
 import { Link } from 'react-router-dom';
+import PostList from '@components/PostList';
+import { IPost } from '@typings/IPost';
+import { IUser } from '@typings/IUser';
 
 const Home = () => {
   const [email, onChangeEmail] = useInput('');
   const [password, onChangePassword] = useInput('');
-  const history = useHistory();
 
-  const { data: userData, revalidate: userRevalidate } = useSWR(
+  const [nickname, onChangeNickname, setNickname] = useInput('');
+  const [introduction, onChangeIntroduction, setIntroduction] = useInput<
+    string | null
+  >('');
+
+  const { data: userData, revalidate: userRevalidate } = useSWR<IUser>(
     '/auth',
     fetcher
   );
+  const { data: postsData, revalidate: postsRevalidate } = useSWR<IPost[]>(
+    '/posts?perPage=10&page=1',
+    fetcher
+  );
+
+  useEffect(() => {
+    if (userData) {
+      setNickname(userData.nickname);
+      setIntroduction(userData.introduction);
+    }
+  }, [userData]);
 
   const onLogIn = useCallback(
     async (e) => {
@@ -41,52 +58,99 @@ const Home = () => {
     window.location.href = 'http://localhost:7005/auth/kakao';
   }, []);
 
+  const onUpdateProfile = useCallback(
+    async (e) => {
+      try {
+        e.preventDefault();
+        await axios.patch('http://localhost:7005/user/profile', {
+          nickname,
+          introduction,
+        });
+        userRevalidate();
+      } catch (error) {
+        console.error(error);
+      }
+    },
+    [nickname, introduction]
+  );
+
   return (
-    <>
-      {!userData && (
-        <form onSubmit={onLogIn} css={layout}>
-          <input
-            type="text"
-            placeholder="이메일"
-            value={email}
-            onChange={onChangeEmail}
-          />
-          <input
-            type="password"
-            placeholder="비밀번호"
-            value={password}
-            onChange={onChangePassword}
-          />
-          <button type="submit" disabled={userData ? true : false}>
-            로그인
-          </button>
-          <a onClick={onKakaoLogIn}>
-            <img src="http://localhost:7005/kakao_login_medium_narrow.png" />
-          </a>
-          <Link to="/signup">회원가입</Link>
-        </form>
-      )}
-      {userData && (
-        <>
-          <button onClick={onLogOut} disabled={userData ? false : true}>
-            로그아웃
-          </button>
-          <div>닉네임 : {userData.nickname}</div>
-          <div>이메일 : {userData.email}</div>
-          <img
-            src={
-              userData.image || 'http://localhost:7005/placeholder-profile.png'
-            }
-            alt="개꿀"
-          />
-        </>
-      )}
-    </>
+    <div css={layout}>
+      <div>
+        {!userData && (
+          <form onSubmit={onLogIn} css={formLayout}>
+            <input
+              type="text"
+              placeholder="이메일"
+              value={email}
+              onChange={onChangeEmail}
+            />
+            <input
+              type="password"
+              placeholder="비밀번호"
+              value={password}
+              onChange={onChangePassword}
+            />
+            <button type="submit" disabled={userData ? true : false}>
+              로그인
+            </button>
+            <a onClick={onKakaoLogIn}>
+              <img src="http://localhost:7005/kakao_login_medium_narrow.png" />
+            </a>
+            <Link to="/signup">회원가입</Link>
+          </form>
+        )}
+        {userData && (
+          <>
+            <button onClick={onLogOut} disabled={userData ? false : true}>
+              로그아웃
+            </button>
+            <div>닉네임 : {userData.nickname}</div>
+            <div>이메일 : {userData.email}</div>
+            <img
+              src={
+                userData.image ||
+                'http://localhost:7005/placeholder-profile.png'
+              }
+              alt="개꿀"
+            />
+            <form onSubmit={onUpdateProfile} css={formLayout}>
+              <input type="text" value={nickname} onChange={onChangeNickname} />
+              <textarea
+                value={introduction ? introduction : ''}
+                onChange={onChangeIntroduction}
+                rows={5}
+              />
+              <button type="submit">수정하기</button>
+            </form>
+          </>
+        )}
+      </div>
+      <div>
+        <Link to="/upload">글쓰기</Link>
+        {postsData?.map((post: IPost, i: number) => (
+          <PostList key={i} post={post} />
+        ))}
+      </div>
+    </div>
   );
 };
 
 const layout = css`
-  width: 20%;
+  display: flex;
+  gap: 3rem;
+
+  div:first-child {
+    flex: 1;
+  }
+
+  div:last-child {
+    flex: 3;
+  }
+`;
+
+const formLayout = css`
+  width: 100%;
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
