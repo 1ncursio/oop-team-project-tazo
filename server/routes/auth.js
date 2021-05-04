@@ -4,6 +4,26 @@ const passport = require('passport');
 const { User } = require('../models');
 const { isLoggedIn, isNotLoggedIn } = require('./middlewares');
 
+// GET /auth
+router.get('/', async (req, res, next) => {
+  try {
+    if (req.user) {
+      const user = await User.findOne({
+        where: { id: req.user.id },
+        attributes: {
+          exclude: ['password'],
+        },
+      });
+      res.status(200).json(user);
+    } else {
+      res.status(200).json(null);
+    }
+  } catch (error) {
+    console.error(error);
+    next(error);
+  }
+});
+
 router.post('/login', isNotLoggedIn, (req, res, next) => {
   passport.authenticate('local', (err, user, info) => {
     if (err) {
@@ -18,13 +38,13 @@ router.post('/login', isNotLoggedIn, (req, res, next) => {
         console.error(loginErr);
         return next(loginErr);
       }
-      const user = await User.findOne({
+      const passwordExcludedUser = await User.findOne({
         where: { id: user.id },
         attributes: {
           exclude: ['password'],
         },
       });
-      return res.status(200).json(user);
+      return res.status(200).json(passwordExcludedUser);
     });
   })(req, res, next);
 });
