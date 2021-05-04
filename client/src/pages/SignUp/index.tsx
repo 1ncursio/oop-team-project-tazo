@@ -1,7 +1,7 @@
+import React, { useCallback, useState } from 'react';
 import { css } from '@emotion/react';
 import useInput from '@hooks/useInput';
 import axios from 'axios';
-import React, { useCallback } from 'react';
 import { useHistory } from 'react-router';
 
 const SignUp = () => {
@@ -9,38 +9,41 @@ const SignUp = () => {
   const [nickname, onChangeNickname] = useInput('');
   const [password, onChangePassword] = useInput('');
   const [confirmPassword, onChangeConfirmPassword] = useInput('');
-  const [signUpSuccess, onChangeSignUpSuccess, setSignUpSuccess] = useInput(
-    false
-  );
+  const [signUpSuccess, setSignUpSuccess] = useState(false);
 
   const history = useHistory();
 
   const onSignUp = useCallback(
-    async (e) => {
+    (e) => {
       e.preventDefault();
 
-      if (!email || !nickname || !password || !confirmPassword)
-        return alert('제대로 써라');
+      if (
+        !email.trim() ||
+        !nickname.trim() ||
+        !password.trim() ||
+        !confirmPassword.trim()
+      )
+        return alert('입력을 확인해주세요.');
+      if (password !== confirmPassword)
+        return alert('비밀번호와 비밀번호 확인이 다릅니다.');
 
-      const { data } = await axios.post('http://localhost:7005/auth/signup', {
-        email,
-        nickname,
-        password,
-      });
-
-      console.log(data);
-
-      if (data.success) {
-        setSignUpSuccess(true);
-        alert('성공');
-      } else {
-        alert(data.message);
-        alert('실패');
-      }
-
-      history.push('/');
+      axios
+        .post('http://localhost:7005/auth/signup', {
+          email,
+          nickname,
+          password,
+        })
+        .then((res) => {
+          setSignUpSuccess(true);
+          alert('회원가입 성공!');
+          history.push('/');
+        })
+        .catch((error) => {
+          console.error(error);
+          alert(error.response.data.message);
+        });
     },
-    [email, nickname, password, confirmPassword]
+    [email, nickname, password, confirmPassword, setSignUpSuccess]
   );
 
   return (
