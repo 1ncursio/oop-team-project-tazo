@@ -25,7 +25,7 @@ router.get('/', async (req, res, next) => {
           attributes: ['id', 'nickname', 'image'],
         },
         // {
-        //   model: Image,
+        //   model: PostImage,
         //   attributes: ['src'],
         // },
         {

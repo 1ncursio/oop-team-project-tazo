@@ -17,11 +17,23 @@ module.exports = class Post extends Model {
           type: DataTypes.INTEGER,
           defaultValue: 0,
         },
-        // gender: {
-        //   // 성별
-        //   type: DataTypes.STRING(10),
-        //   allowNull: true,
-        // },
+        origin: {
+          // 출발지
+          type: DataTypes.STRING(100),
+          allowNull: false,
+          defaultValue: '',
+        },
+        destination: {
+          // 도착지
+          type: DataTypes.STRING(100),
+          allowNull: false,
+          defaultValue: '',
+        },
+        startAt: {
+          // 도착지
+          type: DataTypes.DATE,
+          allowNull: false,
+        },
       },
       {
         modelName: 'Post',
@@ -36,7 +48,7 @@ module.exports = class Post extends Model {
     db.Post.belongsTo(db.User); // post.addUser, post.getUser, post.setUser
     // db.Post.belongsToMany(db.Tag, { through: 'PostTag' }); // post.addHashtags
     db.Post.hasMany(db.Comment); // post.addComments, post.getComments
-    // db.Post.hasMany(db.Image); // post.addImages, post.getImages
+    db.Post.hasMany(db.PostImage); // post.addPostImages, post.getPostImages
     // db.Post.belongsToMany(db.User, { through: 'PostLike', as: 'Likers' }); // post.addLikers, post.removeLikers
   }
 };

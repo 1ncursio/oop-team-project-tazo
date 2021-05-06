@@ -69,7 +69,7 @@ module.exports = class User extends Model {
     );
   }
   static associate(db) {
-    db.User.hasOne(db.Image);
+    db.User.hasOne(db.PostImage);
     db.User.hasMany(db.Post);
     // db.User.hasMany(db.Comment);
     // db.User.belongsToMany(db.Post, { through: 'PostLike', as: 'Liked' });

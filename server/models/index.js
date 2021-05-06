@@ -1,7 +1,7 @@
 const Sequelize = require('sequelize');
 const comment = require('./comment');
 // const Tag = require('./tag');
-const image = require('./image');
+const postImage = require('./postImage');
 const post = require('./post');
 const user = require('./user');
 
@@ -13,7 +13,7 @@ const sequelize = new Sequelize(config.database, config.username, config.passwor
 
 db.Comment = comment;
 // db.Tag = Tag;
-db.Image = image;
+db.PostImage = postImage;
 db.Post = post;
 db.User = user;
 
