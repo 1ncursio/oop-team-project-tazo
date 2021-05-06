@@ -7,7 +7,6 @@ module.exports = class Post extends Model {
       {
         title: {
           type: DataTypes.STRING(50),
-          allowNull: false,
         },
         content: {
           type: DataTypes.TEXT,
@@ -20,20 +19,20 @@ module.exports = class Post extends Model {
         origin: {
           // 출발지
           type: DataTypes.STRING(100),
-          allowNull: false,
-          defaultValue: '',
         },
         destination: {
           // 도착지
           type: DataTypes.STRING(100),
-          allowNull: false,
-          defaultValue: '',
         },
         startAt: {
           // 만나는 시간
           type: DataTypes.DATE,
-          allowNull: false,
           defaultValue: DataTypes.NOW,
+        },
+        gender: {
+          // 성별
+          type: DataTypes.STRING,
+          allowNull: true,
         },
       },
       {

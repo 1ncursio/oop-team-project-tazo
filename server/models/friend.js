@@ -7,7 +7,6 @@ module.exports = class Friend extends Model {
       {
         status: {
           type: DataTypes.TINYINT,
-          allowNull: false,
           defaultValue: 0,
         },
       },

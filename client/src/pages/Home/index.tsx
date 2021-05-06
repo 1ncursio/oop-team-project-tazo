@@ -14,25 +14,17 @@ const Home = () => {
   const [password, onChangePassword] = useInput('');
 
   const [nickname, onChangeNickname, setNickname] = useInput('');
-  const [introduction, onChangeIntroduction, setIntroduction] = useInput<
-    string | null
-  >('');
+  const [introduction, onChangeIntroduction, setIntroduction] = useInput<string | null>('');
 
-  const { data: userData, revalidate: userRevalidate } = useSWR<IUser>(
-    '/auth',
-    fetcher
-  );
-  const { data: postsData, revalidate: postsRevalidate } = useSWR<IPost[]>(
-    '/posts?perPage=10&page=1',
-    fetcher
-  );
+  const { data: userData, revalidate: userRevalidate } = useSWR<IUser>('/auth', fetcher);
+  const { data: postsData, revalidate: postsRevalidate } = useSWR<IPost[]>('/posts?perPage=10&page=1', fetcher);
 
   useEffect(() => {
     if (userData) {
       setNickname(userData.nickname);
       setIntroduction(userData.introduction);
     }
-  }, [userData]);
+  }, [userData, setNickname, setIntroduction]);
 
   const onLogIn = useCallback(
     async (e) => {
@@ -44,7 +36,7 @@ const Home = () => {
       );
       userRevalidate();
     },
-    [email, password]
+    [email, password, userRevalidate]
   );
 
   const onLogOut = useCallback(async (e) => {
@@ -79,18 +71,8 @@ const Home = () => {
       <div>
         {!userData && (
           <form onSubmit={onLogIn} css={formLayout}>
-            <input
-              type="text"
-              placeholder="이메일"
-              value={email}
-              onChange={onChangeEmail}
-            />
-            <input
-              type="password"
-              placeholder="비밀번호"
-              value={password}
-              onChange={onChangePassword}
-            />
+            <input type="text" placeholder="이메일" value={email} onChange={onChangeEmail} />
+            <input type="password" placeholder="비밀번호" value={password} onChange={onChangePassword} />
             <button type="submit" disabled={userData ? true : false}>
               로그인
             </button>
@@ -107,20 +89,10 @@ const Home = () => {
             </button>
             <div>닉네임 : {userData.nickname}</div>
             <div>이메일 : {userData.email}</div>
-            <img
-              src={
-                userData.image ||
-                'http://localhost:7005/placeholder-profile.png'
-              }
-              alt="개꿀"
-            />
+            <img src={userData.image || 'http://localhost:7005/placeholder-profile.png'} alt="개꿀" />
             <form onSubmit={onUpdateProfile} css={formLayout}>
               <input type="text" value={nickname} onChange={onChangeNickname} />
-              <textarea
-                value={introduction ? introduction : ''}
-                onChange={onChangeIntroduction}
-                rows={5}
-              />
+              <textarea value={introduction ? introduction : ''} onChange={onChangeIntroduction} rows={5} />
               <button type="submit">수정하기</button>
             </form>
           </>
@@ -140,7 +112,7 @@ const layout = css`
   display: flex;
   gap: 3rem;
 
-  div:first-child {
+  div:first-of-type {
     flex: 1;
   }
 

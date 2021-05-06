@@ -8,6 +8,7 @@ const Home = loadable(() => import('@pages/Home'));
 const SignUp = loadable(() => import('@pages/SignUp'));
 const Upload = loadable(() => import('@pages/Upload'));
 const Post = loadable(() => import('@pages/Post'));
+const Update = loadable(() => import('@pages/Update'));
 
 const App: FC = () => {
   return (
@@ -18,6 +19,7 @@ const App: FC = () => {
         <Route exact path="/signup" component={SignUp} />
         <Route exact path="/upload" component={Upload} />
         <Route exact path="/post/:postId" component={Post} />
+        <Route exact path="/post/:postId/update" component={Update} />
       </Switch>
       <Global styles={globalStyle} />
     </>

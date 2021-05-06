@@ -28,7 +28,6 @@ module.exports = class User extends Model {
         },
         provider: {
           type: DataTypes.STRING(10),
-          allowNull: false,
           defaultValue: 'local',
         },
         snsId: {
@@ -38,7 +37,6 @@ module.exports = class User extends Model {
         status: {
           type: DataTypes.TINYINT,
           // 0 : pending, 1 : authenticated
-          allowNull: false,
           defaultValue: 0,
         },
         gender: {
@@ -54,8 +52,7 @@ module.exports = class User extends Model {
           // admin 2
           // manager 1
           // normal 0
-          type: DataTypes.INTEGER,
-          allowNull: false,
+          type: DataTypes.TINYINT,
           defaultValue: 0,
         },
       },

@@ -8,7 +8,6 @@ module.exports = class Room extends Model {
         name: {
           type: DataTypes.STRING(30),
           allowNull: false,
-          defaultValue: '파티 구해요~',
         },
       },
       {

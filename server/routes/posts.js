@@ -2,7 +2,7 @@ const express = require('express');
 const { Op } = require('sequelize');
 const router = express.Router();
 
-const { Post, Comment, User } = require('../models');
+const { Post, PostComment, User } = require('../models');
 
 //  GET api/posts
 router.get('/', async (req, res, next) => {
@@ -16,7 +16,7 @@ router.get('/', async (req, res, next) => {
       limit: parseInt(req.query.perPage, 10),
       order: [
         ['createdAt', 'DESC'],
-        [Comment, 'createdAt', 'DESC'],
+        [PostComment, 'createdAt', 'DESC'],
       ],
       offset: req.query.perPage * (req.query.page - 1),
       include: [
@@ -29,7 +29,7 @@ router.get('/', async (req, res, next) => {
         //   attributes: ['src'],
         // },
         {
-          model: Comment,
+          model: PostComment,
           include: [
             {
               model: User, // 댓글 작성자
