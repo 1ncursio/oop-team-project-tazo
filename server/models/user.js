@@ -69,19 +69,9 @@ module.exports = class User extends Model {
     );
   }
   static associate(db) {
-    db.User.hasOne(db.PostImage);
     db.User.hasMany(db.Post);
-    // db.User.hasMany(db.Comment);
-    // db.User.belongsToMany(db.Post, { through: 'PostLike', as: 'Liked' });
-    // db.User.belongsToMany(db.User, {
-    //   through: 'Follow',
-    //   as: 'Followers',
-    //   foreignKey: 'FollowingId',
-    // });
-    // db.User.belongsToMany(db.User, {
-    //   through: 'Follow',
-    //   as: 'Followings',
-    //   foreignKey: 'FollowerId',
-    // });
+    db.User.hasMany(db.PostComment);
+    db.User.hasOne(db.RoomMember);
+    db.User.hasOne(db.Room, { as: 'Owned', foreignKey: 'OwnerId' });
   }
 };

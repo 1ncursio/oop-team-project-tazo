@@ -30,9 +30,10 @@ module.exports = class Post extends Model {
           defaultValue: '',
         },
         startAt: {
-          // 도착지
+          // 만나는 시간
           type: DataTypes.DATE,
           allowNull: false,
+          defaultValue: DataTypes.NOW,
         },
       },
       {
@@ -46,9 +47,7 @@ module.exports = class Post extends Model {
   }
   static associate(db) {
     db.Post.belongsTo(db.User); // post.addUser, post.getUser, post.setUser
-    // db.Post.belongsToMany(db.Tag, { through: 'PostTag' }); // post.addHashtags
-    db.Post.hasMany(db.Comment); // post.addComments, post.getComments
+    db.Post.hasMany(db.PostComment); // post.addPostComments, post.getPostComments
     db.Post.hasMany(db.PostImage); // post.addPostImages, post.getPostImages
-    // db.Post.belongsToMany(db.User, { through: 'PostLike', as: 'Likers' }); // post.addLikers, post.removeLikers
   }
 };

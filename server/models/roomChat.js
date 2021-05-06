@@ -1,7 +1,7 @@
 const DataTypes = require('sequelize');
 const { Model } = DataTypes;
 
-module.exports = class Comment extends Model {
+module.exports = class RoomChat extends Model {
   static init(sequelize) {
     return super.init(
       {
@@ -9,16 +9,10 @@ module.exports = class Comment extends Model {
           type: DataTypes.TEXT,
           allowNull: false,
         },
-        replyId: {
-          type: DataTypes.INTEGER,
-          allowNull: true,
-        },
-        // UserId: 1
-        // PostId: 3
       },
       {
-        modelName: 'Comment',
-        tableName: 'comments',
+        modelName: 'RoomChat',
+        tableName: 'roomChats',
         charset: 'utf8mb4',
         collate: 'utf8mb4_general_ci', // 이모티콘 저장
         sequelize,
@@ -27,8 +21,7 @@ module.exports = class Comment extends Model {
   }
 
   static associate(db) {
-    db.Comment.belongsTo(db.User);
-    db.Comment.belongsTo(db.Post);
-    // db.Comment.belongsTo(db.Comment, { as: 'Reply' }); // post.addReply
+    db.RoomChat.belongsTo(db.User);
+    db.RoomChat.belongsTo(db.Room);
   }
 };

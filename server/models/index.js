@@ -1,9 +1,13 @@
 const Sequelize = require('sequelize');
-const comment = require('./comment');
-// const Tag = require('./tag');
-const postImage = require('./postImage');
-const post = require('./post');
 const user = require('./user');
+const post = require('./post');
+const postImage = require('./postImage');
+const postComment = require('./postComment');
+// const Tag = require('./tag');
+const room = require('./room');
+const roomMember = require('./roomMember');
+const roomChat = require('./roomChat');
+const friend = require('./friend');
 
 const env = process.env.NODE_ENV || 'development';
 const config = require('../config/config')[env];
@@ -11,11 +15,14 @@ const db = {};
 
 const sequelize = new Sequelize(config.database, config.username, config.password, config);
 
-db.Comment = comment;
-// db.Tag = Tag;
-db.PostImage = postImage;
-db.Post = post;
 db.User = user;
+db.Post = post;
+db.PostImage = postImage;
+db.PostComment = postComment;
+db.Room = room;
+db.RoomMember = roomMember;
+db.RoomChat = roomChat;
+db.Friend = friend;
 
 Object.keys(db).forEach((modelName) => {
   db[modelName].init(sequelize);
