@@ -18,13 +18,17 @@ const Upload = () => {
 
   const onChangeImages = useCallback(
     async (e) => {
-      console.log(e.target.files);
-      const imageFormData = new FormData();
-      [].forEach.call(e.target.files, (file) => {
-        imageFormData.append('image', file);
-      });
-      const { data } = await axios.post('http://localhost:7005/post/image', imageFormData, { withCredentials: true });
-      setImage(data);
+      try {
+        console.log(e.target.files);
+        const imageFormData = new FormData();
+        [].forEach.call(e.target.files, (file) => {
+          imageFormData.append('image', file);
+        });
+        const { data } = await axios.post('http://localhost:7005/post/image', imageFormData, { withCredentials: true });
+        setImage(data);
+      } catch (error) {
+        console.error(error);
+      }
     },
     [setImage]
   );
