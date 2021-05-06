@@ -11,7 +11,7 @@ const Header = () => {
 };
 
 const header = css`
-  border-bottom: 1px solid black;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.2);
   background-color: whitesmoke;
   height: 3rem;
   display: flex;

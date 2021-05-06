@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, VFC } from 'react';
+import React, { useCallback, useEffect, useState, VFC } from 'react';
 import { IPost } from '@typings/IPost';
 import fetcher from '@utils/fetcher';
 import { useHistory, useParams } from 'react-router';
@@ -7,9 +7,12 @@ import axios from 'axios';
 import { Link } from 'react-router-dom';
 import { IUser } from '@typings/IUser';
 import useInput from '@hooks/useInput';
+import { css } from '@emotion/react';
 
 const Post: VFC = () => {
   const [comment, onChangeComment, setComment] = useInput('');
+  const [reply, onChangeReply, setReply] = useInput('');
+  const [replyId, setReplyId] = useState(-1);
 
   const { postId } = useParams<{ postId: string }>();
 
@@ -42,6 +45,27 @@ const Post: VFC = () => {
     [postId, comment, postRevalidate, setComment]
   );
 
+  const onSubmitReply = useCallback(
+    async (e) => {
+      try {
+        e.preventDefault();
+        if (!reply.trim()) return alert('댓글을 작성해주세요.');
+
+        const { data } = await axios.post(
+          `/post/${postId}/reply`,
+          { content: reply, replyId },
+          { withCredentials: true }
+        );
+        console.log(data);
+        setReply('');
+        postRevalidate();
+      } catch (error) {
+        console.error(error);
+      }
+    },
+    [postId, postRevalidate, reply, replyId, setReply]
+  );
+
   const onUpdate = useCallback(() => {}, []);
 
   const onDelete = useCallback(async () => {
@@ -51,6 +75,14 @@ const Post: VFC = () => {
     // console.log(data);
     history.replace('/');
   }, [postId, history]);
+
+  const onClickReply = useCallback(
+    (id: number) => {
+      setReplyId(id);
+      console.log(id);
+    },
+    [setReplyId]
+  );
 
   return (
     <>
@@ -77,10 +109,25 @@ const Post: VFC = () => {
             <button type="submit">작성</button>
           </form>
           {postData.PostComments?.map((comment) => (
-            <div>
-              <div>{comment.User.nickname}</div>
-              <div>{comment.createdAt}</div>
-              <div>{comment.content}</div>
+            <div css={commentStyle}>
+              <div>
+                {comment.replyId !== comment.id && <div css={replyStyle} />}
+                <img
+                  css={avatar}
+                  src={comment.User.image || 'http://localhost:7005/placeholder-profile.png'}
+                  alt={comment.User.image || 'http://localhost:7005/placeholder-profile.png'}
+                />
+                <div>{comment.User.nickname}</div>
+                <div>{comment.createdAt}</div>
+                <div>{comment.content}</div>
+                <button onClick={() => onClickReply(comment.id)}>답글</button>
+                {comment.id === replyId && (
+                  <form onSubmit={onSubmitReply}>
+                    <textarea placeholder="댓글" value={reply} onChange={onChangeReply} rows={3} />
+                    <button type="submit">작성</button>
+                  </form>
+                )}
+              </div>
             </div>
           ))}
         </>
@@ -88,5 +135,24 @@ const Post: VFC = () => {
     </>
   );
 };
+
+const commentStyle = css`
+  display: flex;
+
+  margin: 1rem 0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.2);
+`;
+
+const avatar = css`
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+  object-fit: cover;
+`;
+
+const replyStyle = css`
+  width: 5rem;
+  height: 5rem;
+`;
 
 export default Post;

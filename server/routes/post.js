@@ -196,6 +196,7 @@ router.post('/image', isLoggedIn, upload.single('image'), async (req, res, next)
 // POST /post/1/comment
 router.post('/:postId/comment', isLoggedIn, async (req, res, next) => {
   try {
+    const { content } = req.body;
     const post = await Post.findOne({
       where: {
         id: req.params.postId,
@@ -205,13 +206,49 @@ router.post('/:postId/comment', isLoggedIn, async (req, res, next) => {
       return res.status(403).send('존재하지 않는 게시글입니다.');
     }
     const comment = await PostComment.create({
-      content: req.body.content,
+      content,
       PostId: parseInt(req.params.postId, 10),
       UserId: req.user.id,
     });
 
     await comment.update({
       replyId: comment.id,
+    });
+
+    const fullComment = await PostComment.findOne({
+      where: { id: comment.id },
+      include: [
+        {
+          model: User,
+          attributes: ['id', 'nickname', 'image'],
+        },
+      ],
+    });
+    res.status(201).json(fullComment);
+  } catch (error) {
+    console.error(error);
+    next(error);
+  }
+});
+
+/* REPLY ROUTES */
+// POST /post/1/reply
+router.post('/:postId/reply', isLoggedIn, async (req, res, next) => {
+  try {
+    const { content, replyId } = req.body;
+    const post = await Post.findOne({
+      where: {
+        id: req.params.postId,
+      },
+    });
+    if (!post) {
+      return res.status(403).send('존재하지 않는 게시글입니다.');
+    }
+    const comment = await PostComment.create({
+      content,
+      PostId: parseInt(req.params.postId, 10),
+      UserId: req.user.id,
+      replyId,
     });
 
     const fullComment = await PostComment.findOne({
