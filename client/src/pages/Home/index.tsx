@@ -1,5 +1,5 @@
 import { css } from '@emotion/react';
-import React, { useCallback, useEffect } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import useInput from '@hooks/useInput';
 import axios from 'axios';
 import useSWR from 'swr';
@@ -66,6 +66,26 @@ const Home = () => {
     [nickname, introduction]
   );
 
+  const onChangeImage = useCallback(
+    async (e) => {
+      try {
+        console.log(e.target.files);
+        const imageFormData = new FormData();
+        [].forEach.call(e.target.files, (file) => {
+          imageFormData.append('image', file);
+        });
+        const { data: image } = await axios.post('http://localhost:7005/user/image', imageFormData, {
+          withCredentials: true,
+        });
+        await axios.patch('http://localhost:7005/user/image', { image }, { withCredentials: true });
+        userRevalidate();
+      } catch (error) {
+        console.error(error);
+      }
+    },
+    [userRevalidate]
+  );
+
   return (
     <div css={layout}>
       <div>
@@ -92,10 +112,11 @@ const Home = () => {
             <img
               width="300px"
               height="auto"
-              src={userData.image || 'http://localhost:7005/placeholder-profile.png'}
+              src={`http://localhost:7005/${userData.image}` || 'http://localhost:7005/placeholder-profile.png'}
               alt="개꿀"
             />
-            <form onSubmit={onUpdateProfile} css={formLayout}>
+            <form onSubmit={onUpdateProfile} css={formLayout} encType="multipart/form-data">
+              <input type="file" onChange={onChangeImage} />
               <input type="text" value={nickname} onChange={onChangeNickname} />
               <textarea value={introduction ? introduction : ''} onChange={onChangeIntroduction} rows={5} />
               <button type="submit">수정하기</button>
