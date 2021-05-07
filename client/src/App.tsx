@@ -9,6 +9,7 @@ const SignUp = loadable(() => import('@pages/SignUp'));
 const Upload = loadable(() => import('@pages/Upload'));
 const Post = loadable(() => import('@pages/Post'));
 const Update = loadable(() => import('@pages/Update'));
+const Search = loadable(() => import('@pages/Search'));
 
 const App: FC = () => {
   return (
@@ -20,6 +21,7 @@ const App: FC = () => {
         <Route exact path="/upload" component={Upload} />
         <Route exact path="/post/:postId" component={Post} />
         <Route exact path="/post/:postId/update" component={Update} />
+        <Route exact path={['/search', '/search/:nickname']} component={Search} />
       </Switch>
       <Global styles={globalStyle} />
     </>
@@ -46,7 +48,7 @@ const globalStyle = css`
     justify-content: center;
   }
   #root {
-    width: 1500px;
+    width: 1280px;
   }
 `;
 

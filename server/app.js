@@ -13,6 +13,7 @@ const hpp = require('hpp');
 const helmet = require('helmet');
 
 const userRouter = require('./routes/user');
+const usersRouter = require('./routes/users');
 const authRouter = require('./routes/auth');
 const postRouter = require('./routes/post');
 const postsRouter = require('./routes/posts');
@@ -80,6 +81,7 @@ app.get('/oauth', passport.authenticate('kakao'), (req, res) => {
 });
 
 app.use('/user', userRouter);
+app.use('/users', usersRouter);
 app.use('/auth', authRouter);
 app.use('/post', postRouter);
 app.use('/posts', postsRouter);
