@@ -8,6 +8,12 @@ import { Link } from 'react-router-dom';
 import { IUser } from '@typings/IUser';
 import useInput from '@hooks/useInput';
 import { css } from '@emotion/react';
+import dayjs from 'dayjs';
+import 'dayjs/locale/ko';
+import relativeTime from 'dayjs/plugin/relativeTime';
+
+dayjs.locale('ko');
+dayjs.extend(relativeTime);
 
 const Post: VFC = () => {
   const [comment, onChangeComment, setComment] = useInput('');
@@ -90,7 +96,7 @@ const Post: VFC = () => {
         <>
           <h2>{postData.title}</h2>
           <p>작성자 : {postData.User.nickname}</p>
-          <p>작성시간 : {postData.createdAt}</p>
+          <p>작성시간 : {dayjs(postData.createdAt).fromNow()}</p>
           <p>조회수 : {postData.views}</p>
           {postData.PostImages?.map((image) => (
             <img
@@ -109,8 +115,8 @@ const Post: VFC = () => {
             <button type="submit">작성</button>
           </form>
           {postData.PostComments?.map((comment) => (
-            <div css={commentStyle}>
-              <div>
+            <div css={commentContainerStyle}>
+              <div css={commentStyle}>
                 {comment.replyId !== comment.id && <div css={replyStyle} />}
                 <img
                   css={avatar}
@@ -118,9 +124,9 @@ const Post: VFC = () => {
                   alt={comment.User.image || 'http://localhost:7005/placeholder-profile.png'}
                 />
                 <div>{comment.User.nickname}</div>
-                <div>{comment.createdAt}</div>
+                <div>{dayjs(comment.createdAt).fromNow()}</div>
                 <div>{comment.content}</div>
-                <button onClick={() => onClickReply(comment.id)}>답글</button>
+                {comment.replyId === comment.id && <button onClick={() => onClickReply(comment.replyId)}>답글</button>}
                 {comment.id === replyId && (
                   <form onSubmit={onSubmitReply}>
                     <textarea placeholder="댓글" value={reply} onChange={onChangeReply} rows={3} />
@@ -150,9 +156,12 @@ const avatar = css`
   object-fit: cover;
 `;
 
+const commentContainerStyle = css`
+  display: flex;
+`;
+
 const replyStyle = css`
   width: 5rem;
-  height: 5rem;
 `;
 
 export default Post;

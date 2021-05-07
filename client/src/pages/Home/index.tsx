@@ -89,7 +89,12 @@ const Home = () => {
             </button>
             <div>닉네임 : {userData.nickname}</div>
             <div>이메일 : {userData.email}</div>
-            <img src={userData.image || 'http://localhost:7005/placeholder-profile.png'} alt="개꿀" />
+            <img
+              width="300px"
+              height="auto"
+              src={userData.image || 'http://localhost:7005/placeholder-profile.png'}
+              alt="개꿀"
+            />
             <form onSubmit={onUpdateProfile} css={formLayout}>
               <input type="text" value={nickname} onChange={onChangeNickname} />
               <textarea value={introduction ? introduction : ''} onChange={onChangeIntroduction} rows={5} />

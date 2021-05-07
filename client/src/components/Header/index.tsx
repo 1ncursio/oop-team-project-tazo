@@ -6,6 +6,7 @@ const Header = () => {
   return (
     <header css={header}>
       <Link to="/">홈</Link>
+      <Link to="/search">유저</Link>
     </header>
   );
 };

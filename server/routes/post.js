@@ -244,15 +244,15 @@ router.post('/:postId/reply', isLoggedIn, async (req, res, next) => {
     if (!post) {
       return res.status(403).send('존재하지 않는 게시글입니다.');
     }
-    const comment = await PostComment.create({
+    const reply = await PostComment.create({
       content,
       PostId: parseInt(req.params.postId, 10),
       UserId: req.user.id,
       replyId,
     });
 
-    const fullComment = await PostComment.findOne({
-      where: { id: comment.id },
+    const fullReply = await PostComment.findOne({
+      where: { id: reply.id },
       include: [
         {
           model: User,
@@ -260,7 +260,7 @@ router.post('/:postId/reply', isLoggedIn, async (req, res, next) => {
         },
       ],
     });
-    res.status(201).json(fullComment);
+    res.status(201).json(fullReply);
   } catch (error) {
     console.error(error);
     next(error);

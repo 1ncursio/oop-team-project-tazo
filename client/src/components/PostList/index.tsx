@@ -2,6 +2,12 @@ import { css } from '@emotion/react';
 import { IPost } from '@typings/IPost';
 import React from 'react';
 import { Link } from 'react-router-dom';
+import dayjs from 'dayjs';
+import 'dayjs/locale/ko';
+import relativeTime from 'dayjs/plugin/relativeTime';
+
+dayjs.locale('ko');
+dayjs.extend(relativeTime);
 
 interface PostListProps {
   post: IPost;
@@ -14,7 +20,7 @@ const PostList = ({ post }: PostListProps) => {
         <Link to={`/post/${post.id}`}>{post.title}</Link>
       </h2>
       <p>작성자 : {post.User.nickname}</p>
-      <p>작성시간 : {post.createdAt}</p>
+      <p>작성시간 : {dayjs(post.createdAt).fromNow()}</p>
       <p>{post.content}</p>
     </div>
   );
