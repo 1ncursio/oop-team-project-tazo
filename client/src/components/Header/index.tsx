@@ -7,6 +7,7 @@ const Header = () => {
     <header css={header}>
       <Link to="/">홈</Link>
       <Link to="/search">유저 검색</Link>
+      <Link to="/room">방 목록</Link>
     </header>
   );
 };

@@ -10,6 +10,7 @@ const Upload = loadable(() => import('@pages/Upload'));
 const Post = loadable(() => import('@pages/Post'));
 const Update = loadable(() => import('@pages/Update'));
 const Search = loadable(() => import('@pages/Search'));
+const Room = loadable(() => import('@pages/Room'));
 
 const App: FC = () => {
   return (
@@ -22,6 +23,7 @@ const App: FC = () => {
         <Route exact path="/post/:postId" component={Post} />
         <Route exact path="/post/:postId/update" component={Update} />
         <Route exact path={['/search', '/search/:nickname']} component={Search} />
+        <Route exact path={'/room'} component={Room} />
       </Switch>
       <Global styles={globalStyle} />
     </>

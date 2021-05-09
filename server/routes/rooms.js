@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { sequelize, Room, RoomMember } = require('../models');
+const { sequelize, Room, RoomMember, User } = require('../models');
 const { isLoggedIn } = require('./middlewares');
 
 router.get('/', async (req, res, next) => {
@@ -15,11 +15,17 @@ router.get('/', async (req, res, next) => {
 
 router.post('/', isLoggedIn, async (req, res, next) => {
   const { name } = req.body;
-  const transaction = sequelize.transaction();
+  const transaction = await sequelize.transaction();
   try {
     const room = await Room.create({ name, OwnerId: req.user.id }, { transaction });
-    // RoomMember.create()
-    transaction.commit();
+    await room.addMembers(req.user.id, { transaction });
+    await transaction.commit();
+
+    const roomWithUser = await Room.findOne({ where: { id: room.id }, include: [{ model: User, attributes: ['id', 'nickname', 'image'] }] });
+
+    const io = req.app.get('io');
+    io.of(`/room-${room.id}`).emit('room', roomWithUser);
+    return res.send('ok');
   } catch (error) {
     console.error(error);
     next(error);
