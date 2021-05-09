@@ -15,10 +15,7 @@ const Update: VFC = () => {
   const history = useHistory();
 
   const { postId } = useParams<{ postId: string }>();
-  const { data: postData } = useSWR<IPost>(
-    postId ? `http://localhost:7005/post/${postId}` : null,
-    fetcher
-  );
+  const { data: postData } = useSWR<IPost>(postId ? `/post/${postId}` : null, fetcher);
 
   useEffect(() => {
     if (postData) {
@@ -31,11 +28,7 @@ const Update: VFC = () => {
     async (e) => {
       try {
         e.preventDefault();
-        const { data } = await axios.patch(
-          `http://localhost:7005/post/${postId}`,
-          { title, content },
-          { withCredentials: true }
-        );
+        const { data } = await axios.patch(`/post/${postId}`, { title, content });
         console.log(data);
         history.push(`/post/${postId}`);
       } catch (error) {
@@ -48,18 +41,8 @@ const Update: VFC = () => {
 
   return (
     <form onSubmit={onUpdate} css={formLayout}>
-      <input
-        type="text"
-        placeholder="제목"
-        value={title}
-        onChange={onChangeTitle}
-      />
-      <textarea
-        placeholder="내용"
-        value={content}
-        onChange={onChangeContent}
-        rows={5}
-      />
+      <input type="text" placeholder="제목" value={title} onChange={onChangeTitle} />
+      <textarea placeholder="내용" value={content} onChange={onChangeContent} rows={5} />
       <button type="submit">작성</button>
     </form>
   );

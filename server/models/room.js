@@ -22,5 +22,7 @@ module.exports = class Room extends Model {
   static associate(db) {
     // db.Room.belongsTo(db.User);
     db.Room.hasMany(db.RoomChat);
+    db.Room.belongsTo(db.User, { as: 'Owner', foreignKey: 'OwnerId' });
+    db.Room.belongsToMany(db.User, { through: db.RoomMember, as: 'Members' });
   }
 };

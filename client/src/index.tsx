@@ -3,6 +3,11 @@ import ReactDOM from 'react-dom';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
 import { BrowserRouter } from 'react-router-dom';
+import axios from 'axios';
+
+axios.defaults.withCredentials = true;
+axios.defaults.baseURL = process.env.NODE_ENV === 'production' ? 'https://api.tazo.com' : 'http://localhost:7005';
+console.log('env', process.env.NODE_ENV === 'production');
 
 ReactDOM.render(
   <React.StrictMode>

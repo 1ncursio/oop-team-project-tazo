@@ -29,11 +29,7 @@ const Home = () => {
   const onLogIn = useCallback(
     async (e) => {
       e.preventDefault();
-      const result = await axios.post(
-        'http://localhost:7005/auth/login',
-        { email, password },
-        { withCredentials: true }
-      );
+      const result = await axios.post('/auth/login', { email, password });
       userRevalidate();
     },
     [email, password, userRevalidate]
@@ -41,7 +37,7 @@ const Home = () => {
 
   const onLogOut = useCallback(async (e) => {
     e.preventDefault();
-    const result = await axios.get('http://localhost:7005/auth/logout');
+    const result = await axios.get('/auth/logout');
     userRevalidate();
     console.log(result);
   }, []);
@@ -54,7 +50,7 @@ const Home = () => {
     async (e) => {
       try {
         e.preventDefault();
-        await axios.patch('http://localhost:7005/user/profile', {
+        await axios.patch('/user/profile', {
           nickname,
           introduction,
         });
@@ -74,10 +70,8 @@ const Home = () => {
         [].forEach.call(e.target.files, (file) => {
           imageFormData.append('image', file);
         });
-        const { data: image } = await axios.post('http://localhost:7005/user/image', imageFormData, {
-          withCredentials: true,
-        });
-        await axios.patch('http://localhost:7005/user/image', { image }, { withCredentials: true });
+        const { data: image } = await axios.post('/user/image', imageFormData);
+        await axios.patch('/user/image', { image });
         userRevalidate();
       } catch (error) {
         console.error(error);
@@ -112,7 +106,11 @@ const Home = () => {
             <img
               width="300px"
               height="auto"
-              src={`http://localhost:7005/${userData.image}` || 'http://localhost:7005/placeholder-profile.png'}
+              src={
+                userData.image.startsWith('http://')
+                  ? userData.image
+                  : `http://localhost:7005/${userData.image}` || 'http://localhost:7005/placeholder-profile.png'
+              }
               alt="개꿀"
             />
             <form onSubmit={onUpdateProfile} css={formLayout} encType="multipart/form-data">

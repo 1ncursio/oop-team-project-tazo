@@ -24,7 +24,7 @@ const Upload = () => {
         [].forEach.call(e.target.files, (file) => {
           imageFormData.append('image', file);
         });
-        const { data } = await axios.post('http://localhost:7005/post/image', imageFormData, { withCredentials: true });
+        const { data } = await axios.post('/post/image', imageFormData);
         setImage(data);
       } catch (error) {
         console.error(error);
@@ -37,11 +37,7 @@ const Upload = () => {
     async (e) => {
       try {
         e.preventDefault();
-        const { data } = await axios.post(
-          'http://localhost:7005/post',
-          { title, content, src: image },
-          { withCredentials: true }
-        );
+        const { data } = await axios.post('/post', { title, content, src: image });
         console.log(data);
         history.push(`/post/${data.id}`);
       } catch (error) {

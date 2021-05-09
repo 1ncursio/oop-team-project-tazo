@@ -29,10 +29,7 @@ const Post: VFC = () => {
   }, [postId]);
 
   const { data: userData } = useSWR<IUser>('/auth', fetcher);
-  const { data: postData, revalidate: postRevalidate } = useSWR<IPost>(
-    postId ? `http://localhost:7005/post/${postId}` : null,
-    fetcher
-  );
+  const { data: postData, revalidate: postRevalidate } = useSWR<IPost>(postId ? `/post/${postId}` : null, fetcher);
 
   const onSubmitComment = useCallback(
     async (e) => {
@@ -77,7 +74,7 @@ const Post: VFC = () => {
   const onDelete = useCallback(async () => {
     const {
       data: { PostId },
-    } = await axios.delete(`http://localhost:7005/post/${postId}`);
+    } = await axios.delete(`/post/${postId}`);
     // console.log(data);
     history.replace('/');
   }, [postId, history]);
@@ -120,7 +117,11 @@ const Post: VFC = () => {
                 {comment.replyId !== comment.id && <div css={replyStyle} />}
                 <img
                   css={avatar}
-                  src={comment.User.image || 'http://localhost:7005/placeholder-profile.png'}
+                  src={
+                    comment.User.image.startsWith('http://')
+                      ? comment.User.image
+                      : `http://localhost:7005/${comment.User.image}` || 'http://localhost:7005/placeholder-profile.png'
+                  }
                   alt={comment.User.image || 'http://localhost:7005/placeholder-profile.png'}
                 />
                 <div>{comment.User.nickname}</div>

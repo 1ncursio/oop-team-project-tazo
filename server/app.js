@@ -17,8 +17,13 @@ const usersRouter = require('./routes/users');
 const authRouter = require('./routes/auth');
 const postRouter = require('./routes/post');
 const postsRouter = require('./routes/posts');
+const roomsRouter = require('./routes/rooms');
 
 const db = require('./models');
+
+const webSocket = require('./socket');
+
+app.set('PORT', process.env.PORT || 80);
 
 const isProduction = process.env.NODE_ENV === 'production';
 
@@ -85,7 +90,10 @@ app.use('/users', usersRouter);
 app.use('/auth', authRouter);
 app.use('/post', postRouter);
 app.use('/posts', postsRouter);
+app.use('/rooms', roomsRouter);
 
-app.listen(process.env.PORT, () => {
-  console.log(`server listening at ${process.env.PORT} port...`);
+const server = app.listen(app.get('PORT'), () => {
+  console.log(`server listening at ${app.get('PORT')} port...`);
 });
+
+webSocket(server, app);
