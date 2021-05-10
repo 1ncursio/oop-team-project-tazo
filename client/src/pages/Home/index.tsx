@@ -1,5 +1,5 @@
 import { css } from '@emotion/react';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect } from 'react';
 import useInput from '@hooks/useInput';
 import axios from 'axios';
 import useSWR from 'swr';
@@ -103,16 +103,18 @@ const Home = () => {
             </button>
             <div>닉네임 : {userData.nickname}</div>
             <div>이메일 : {userData.email}</div>
-            <img
-              width="300px"
-              height="auto"
-              src={
-                userData.image.startsWith('http://')
-                  ? userData.image
-                  : `http://localhost:7005/${userData.image}` || 'http://localhost:7005/placeholder-profile.png'
-              }
-              alt="개꿀"
-            />
+            {userData.image && (
+              <img
+                width="300px"
+                height="auto"
+                src={
+                  userData.image.startsWith('http://')
+                    ? userData.image
+                    : `http://localhost:7005/${userData.image}` || 'http://localhost:7005/placeholder-profile.png'
+                }
+                alt="개꿀"
+              />
+            )}
             <form onSubmit={onUpdateProfile} css={formLayout} encType="multipart/form-data">
               <input type="file" onChange={onChangeImage} />
               <input type="text" value={nickname} onChange={onChangeNickname} />

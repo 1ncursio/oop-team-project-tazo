@@ -17,7 +17,9 @@ const useSocket = (room?: string): [SocketIOClient.Socket | undefined, () => voi
   }
 
   if (!sockets[room]) {
-    sockets[room] = io.connect(`${BACKEND_URL}/ws-${room}`, { transports: ['websocket'] });
+    console.log(room, '소켓 연결!!');
+    sockets[room] = io.connect(`${BACKEND_URL}/room-${room}`, { transports: ['websocket'] });
+    console.log(sockets[room]);
   }
 
   return [sockets[room], disconnect];

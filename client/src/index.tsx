@@ -4,6 +4,8 @@ import App from './App';
 import reportWebVitals from './reportWebVitals';
 import { BrowserRouter } from 'react-router-dom';
 import axios from 'axios';
+import SWRDevtools from '@jjordy/swr-devtools';
+import { cache, mutate } from 'swr';
 
 axios.defaults.withCredentials = true;
 axios.defaults.baseURL = process.env.NODE_ENV === 'production' ? 'https://api.tazo.com' : 'http://localhost:7005';
@@ -11,6 +13,7 @@ console.log('env', process.env.NODE_ENV === 'production');
 
 ReactDOM.render(
   <React.StrictMode>
+    <SWRDevtools cache={cache} mutate={mutate} debug />
     <BrowserRouter>
       <App />
     </BrowserRouter>
