@@ -5,6 +5,7 @@ const path = require('path');
 const multer = require('multer');
 const { isLoggedIn } = require('./middlewares');
 const { Post, PostComment, User, PostImage } = require('../models');
+const { STATUS_404_POST } = require('../utils/message');
 
 try {
   fs.accessSync('uploads');
@@ -37,7 +38,7 @@ router.get('/:postId', async (req, res, next) => {
       },
     });
     if (!post) {
-      return res.status(404).json({ success: false, message: '존재하지 않는 게시글입니다.' });
+      return res.status(404).json({ success: false, message: STATUS_404_POST });
     }
 
     await post.increment('views');
@@ -131,7 +132,7 @@ router.patch('/:postId', isLoggedIn, async (req, res, next) => {
 
     const post = await Post.findOne({ where: { id: postId, UserId: req.user.id } });
     if (!post) {
-      return res.status(404).json({ success: false, message: '포스트를 찾을 수 없습니다.' });
+      return res.status(404).json({ success: false, message: STATUS_404_POST });
     }
 
     await Post.update(

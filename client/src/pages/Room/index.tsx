@@ -4,6 +4,7 @@ import { css } from '@emotion/react';
 import useInput from '@hooks/useInput';
 import { IRoom } from '@typings/IRoom';
 import fetcher from '@utils/fetcher';
+import axios from 'axios';
 import React, { useCallback } from 'react';
 import { useParams } from 'react-router';
 import useSWR from 'swr';
@@ -18,8 +19,10 @@ const Room = () => {
     async (e) => {
       e.preventDefault();
       console.log({ content });
+      const { data } = await axios.post(`/rooms/${roomId}/chat`, { content });
+      console.log(data);
     },
-    [content]
+    [roomId, content]
   );
 
   return (
@@ -27,7 +30,7 @@ const Room = () => {
       {/* <RoomUserList /> */}
       <header>{`${roomData?.name} - 타조 방`}</header>
       {roomData?.Members?.map((member) => (
-        <div css={memberStyle}>
+        <div css={memberStyle} key={member.id}>
           <Avatar user={member} />
           {roomData.OwnerId === member.id && (
             <span>

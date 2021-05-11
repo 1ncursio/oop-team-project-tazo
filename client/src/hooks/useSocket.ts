@@ -4,7 +4,7 @@ import backUrl from '@utils/backUrl';
 
 const sockets: { [key: string]: SocketIOClient.Socket } = {};
 
-const useSocket = (namespace?: string): [SocketIOClient.Socket | undefined, () => void] => {
+const useSocket = (namespace?: string, namespaceId?: string): [SocketIOClient.Socket | undefined, () => void] => {
   const disconnect = useCallback(() => {
     if (namespace && sockets[namespace]) {
       sockets[namespace].disconnect();
@@ -16,8 +16,12 @@ const useSocket = (namespace?: string): [SocketIOClient.Socket | undefined, () =
   }
 
   if (!sockets[namespace]) {
-    sockets[namespace] = io.connect(`${backUrl}/ws-${namespace}`, { transports: ['websocket'] });
-    console.info('create socket', namespace, sockets[namespace]);
+    if (!namespaceId) {
+      sockets[namespace] = io.connect(`${backUrl}/ws-${namespace}`, { transports: ['websocket'] });
+    } else {
+      sockets[namespace] = io.connect(`${backUrl}/ws-${namespace}-${namespaceId}`, { transports: ['websocket'] });
+    }
+    console.info('create socket', namespace, namespaceId, sockets[namespace]);
   }
 
   return [sockets[namespace], disconnect];

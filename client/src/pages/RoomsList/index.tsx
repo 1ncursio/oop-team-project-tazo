@@ -67,7 +67,7 @@ const RoomsList = () => {
   return (
     <div>
       {roomsData?.map((room) => (
-        <div css={roomStyle}>
+        <div css={roomStyle} key={room.id}>
           <div>
             <Link to={`/room/${room.id}`}>{room.name}</Link>
           </div>

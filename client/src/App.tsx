@@ -16,7 +16,6 @@ const Room = loadable(() => import('@pages/Room'));
 const App: FC = () => {
   return (
     <>
-      <Header />
       <Switch>
         <Route exact path="/" component={Home} />
         <Route exact path="/signup" component={SignUp} />
@@ -27,6 +26,7 @@ const App: FC = () => {
         <Route exact path={'/room'} component={RoomsList} />
         <Route exact path={'/room/:roomId'} component={Room} />
       </Switch>
+      <Header />
       <Global styles={globalStyle} />
     </>
   );
@@ -36,7 +36,7 @@ const globalStyle = css`
   html,
   body,
   #root {
-    height: 100%;
+    min-height: 100vh;
     margin: 0;
     padding: 0;
   }
@@ -48,11 +48,15 @@ const globalStyle = css`
     }
   }
   body {
+    font-family: 'Noto Sans KR', sans-serif;
     display: flex;
     justify-content: center;
+    background-color: rgba(0, 0, 0, 0.1);
   }
   #root {
     width: 1280px;
+    background-color: white;
+    padding-bottom: 3rem;
   }
 `;
 

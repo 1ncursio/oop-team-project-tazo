@@ -3,6 +3,7 @@ const router = express.Router();
 const multer = require('multer');
 const path = require('path');
 const { User } = require('../models');
+const { STATUS_404_USER } = require('../utils/message');
 const { isLoggedIn } = require('./middlewares');
 
 const upload = multer({
@@ -61,6 +62,20 @@ router.patch('/profile', isLoggedIn, async (req, res, next) => {
   } catch (error) {
     console.error(error);
     next(error); // status 500
+  }
+});
+
+router.get('/', async (req, res, next) => {
+  try {
+    const user = await User.findOne({ where: { id: req.user.id } });
+    if (!user) {
+      return res.status(404).json({ success: false, message: STATUS_404_USER });
+    }
+
+    return res.status(200).json(user);
+  } catch (error) {
+    console.error(error);
+    next(error);
   }
 });
 

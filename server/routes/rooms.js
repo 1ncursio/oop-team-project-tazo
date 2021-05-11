@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
-const { sequelize, Room, User } = require('../models');
+const { sequelize, Room, User, RoomChat } = require('../models');
+const { STATUS_404_ROOM } = require('../utils/message');
 const { isLoggedIn } = require('./middlewares');
 
 router.get('/', async (req, res, next) => {
@@ -82,7 +83,7 @@ router.delete('/:roomId', isLoggedIn, async (req, res, next) => {
   }
 });
 
-router.get('/:roomId', async (req, res, next) => {
+router.get('/:roomId', isLoggedIn, async (req, res, next) => {
   try {
     const { roomId } = req.params;
     const room = await Room.findOne({
@@ -102,12 +103,75 @@ router.get('/:roomId', async (req, res, next) => {
     });
 
     if (!room) {
-      return res.status(404).json({ success: false, message: '존재하지 않는 방입니다.' });
+      return res.status(404).json({ success: false, message: STATUS_404_ROOM });
     }
 
     res.status(200).json(room);
   } catch (error) {
     console.error(error);
+    next(error);
+  }
+});
+
+/*
+
+  채팅 라우터
+
+*/
+
+router.get('/:roomId/chat', async (req, res, next) => {
+  try {
+    const { roomId } = req.params;
+
+    const room = await Room.findOne({ where: { id: roomId } });
+    if (!room) {
+      return res.status(404).json({ success: false, message: STATUS_404_ROOM });
+    }
+    res.status(200).json(await room.getRoomChats());
+  } catch (error) {
+    console.error(error);
+    next(error);
+  }
+});
+
+router.post('/:roomId/chat', isLoggedIn, async (req, res, next) => {
+  const transaction = await sequelize.transaction();
+  try {
+    const { roomId } = req.params;
+    const { content } = req.body;
+
+    const room = await Room.findOne({ where: { id: roomId } });
+    if (!room) {
+      return res.status(404).json({ success: false, message: STATUS_404_ROOM });
+    }
+
+    const chat = await RoomChat.create(
+      {
+        UserId: req.user.id,
+        RoomId: roomId,
+        content,
+      },
+      { transaction }
+    );
+
+    const chatWithUser = await RoomChat.findOne({
+      where: { id: chat.id },
+      include: [
+        {
+          model: User,
+        },
+      ],
+    });
+
+    await transaction.commit();
+
+    const io = req.app.get('io');
+    io.of('/ws-room').to(`/ws-room-${roomId}`).emit('chat', chatWithUser);
+
+    return res.status(200).json({ success: true });
+  } catch (error) {
+    console.error(error);
+    transaction.rollback();
     next(error);
   }
 });
