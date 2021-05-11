@@ -1,11 +1,19 @@
 const express = require('express');
 const router = express.Router();
-const { sequelize, Room, RoomMember, User } = require('../models');
+const { sequelize, Room, User } = require('../models');
 const { isLoggedIn } = require('./middlewares');
 
 router.get('/', async (req, res, next) => {
   try {
-    const rooms = await Room.findAll();
+    const rooms = await Room.findAll({
+      include: [
+        {
+          model: User, // 포스트 작성자
+          as: 'Owner',
+          attributes: ['id', 'nickname', 'image'],
+        },
+      ],
+    });
     return res.json(rooms);
   } catch (error) {
     console.error(error);
@@ -14,25 +22,31 @@ router.get('/', async (req, res, next) => {
 });
 
 router.post('/', isLoggedIn, async (req, res, next) => {
-  const { name } = req.body;
+  const { name, userLimit } = req.body;
   const transaction = await sequelize.transaction();
   try {
     const exRoom = await Room.findOne({ where: { OwnerId: req.user.id }, transaction });
     if (exRoom) {
       return res.status(403).send('방은 2개 이상 만들 수 없습니다.');
     }
-    const room = await Room.create({ name, OwnerId: req.user.id }, { transaction });
+    const room = await Room.create({ name, userLimit, OwnerId: req.user.id }, { transaction });
     await room.addMembers(req.user.id, { transaction });
     await transaction.commit();
 
     const roomWithUser = await Room.findOne({
       where: { id: room.id },
-      // include: [{ model: User, attributes: ['id', 'nickname', 'image'] }],
+      include: [
+        {
+          model: User, // 포스트 작성자
+          as: 'Owner',
+          attributes: ['id', 'nickname', 'image'],
+        },
+      ],
     });
 
     const io = req.app.get('io');
     // io.of(`/room-${room.id}`).emit('roomList', roomWithUser);
-    io.of('/room-room').emit('roomList', roomWithUser);
+    io.of('/ws-room').emit('createRoom', roomWithUser);
     return res.send('ok');
   } catch (error) {
     console.error(error);

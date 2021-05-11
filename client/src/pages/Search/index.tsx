@@ -1,6 +1,8 @@
+import Avatar from '@components/Avatar';
 import { css } from '@emotion/react';
 import useInput from '@hooks/useInput';
 import { IUser } from '@typings/IUser';
+import backUrl from '@utils/backUrl';
 import fetcher from '@utils/fetcher';
 import axios from 'axios';
 import React, { useCallback, useEffect } from 'react';
@@ -32,11 +34,7 @@ const Search = () => {
       </form>
       {usersData?.map((user) => (
         <div css={usersStyle}>
-          <img
-            css={avatar}
-            src={user.image || 'http://localhost:7005/placeholder-profile.png'}
-            alt={user.image || 'http://localhost:7005/placeholder-profile.png'}
-          />
+          <Avatar image={user.image} />
           <div>{user.nickname}</div>
         </div>
       ))}
@@ -66,13 +64,6 @@ const usersStyle = css`
   display: flex;
   align-items: center;
   gap: 0.5rem;
-`;
-
-const avatar = css`
-  width: 2.5rem;
-  height: 2.5rem;
-  border-radius: 50%;
-  object-fit: cover;
 `;
 
 export default Search;

@@ -6,9 +6,10 @@ import { BrowserRouter } from 'react-router-dom';
 import axios from 'axios';
 import SWRDevtools from '@jjordy/swr-devtools';
 import { cache, mutate } from 'swr';
+import backUrl from '@utils/backUrl';
 
 axios.defaults.withCredentials = true;
-axios.defaults.baseURL = process.env.NODE_ENV === 'production' ? 'https://api.tazo.com' : 'http://localhost:7005';
+axios.defaults.baseURL = process.env.NODE_ENV === 'production' ? 'https://api.tazo.com' : backUrl;
 console.log('env', process.env.NODE_ENV === 'production');
 
 ReactDOM.render(

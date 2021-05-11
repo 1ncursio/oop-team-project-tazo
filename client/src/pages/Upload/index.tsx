@@ -1,6 +1,7 @@
 import { css } from '@emotion/react';
 import useInput from '@hooks/useInput';
 import { IUser } from '@typings/IUser';
+import backUrl from '@utils/backUrl';
 import fetcher from '@utils/fetcher';
 import axios from 'axios';
 import React, { useCallback, useState } from 'react';
@@ -52,7 +53,7 @@ const Upload = () => {
     <form onSubmit={onUpload} css={formLayout} encType="multipart/form-data">
       <input type="text" placeholder="제목" value={title} onChange={onChangeTitle} />
       <input type="file" onChange={onChangeImages} />
-      {image && <img src={`http://localhost:7005/${image}`} alt={image} />}
+      {image && <img src={`${backUrl}/${image}`} alt={image} />}
       <textarea placeholder="내용" value={content} onChange={onChangeContent} rows={5} />
       <input type="text" placeholder="시간" />
       <input type="text" placeholder="출발지" />

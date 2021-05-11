@@ -8,6 +8,7 @@ import { Link } from 'react-router-dom';
 import PostList from '@components/PostList';
 import { IPost } from '@typings/IPost';
 import { IUser } from '@typings/IUser';
+import backUrl from '@utils/backUrl';
 
 const Home = () => {
   const [email, onChangeEmail] = useInput('');
@@ -43,7 +44,7 @@ const Home = () => {
   }, []);
 
   const onKakaoLogIn = useCallback(() => {
-    window.location.href = 'http://localhost:7005/auth/kakao';
+    window.location.href = `${backUrl}/auth/kakao`;
   }, []);
 
   const onUpdateProfile = useCallback(
@@ -91,7 +92,7 @@ const Home = () => {
               로그인
             </button>
             <a onClick={onKakaoLogIn}>
-              <img src="http://localhost:7005/kakao_login_medium_narrow.png" />
+              <img src={`${backUrl}/kakao_login_medium_narrow.png`} alt="alt" />
             </a>
             <Link to="/signup">회원가입</Link>
           </form>
@@ -110,7 +111,7 @@ const Home = () => {
                 src={
                   userData.image.startsWith('http://')
                     ? userData.image
-                    : `http://localhost:7005/${userData.image}` || 'http://localhost:7005/placeholder-profile.png'
+                    : `${backUrl}/${userData.image}` || `${backUrl}/placeholder-profile.png`
                 }
                 alt="개꿀"
               />

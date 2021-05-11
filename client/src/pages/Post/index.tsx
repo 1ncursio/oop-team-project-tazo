@@ -11,6 +11,8 @@ import { css } from '@emotion/react';
 import dayjs from 'dayjs';
 import 'dayjs/locale/ko';
 import relativeTime from 'dayjs/plugin/relativeTime';
+import backUrl from '@utils/backUrl';
+import Avatar from '@components/Avatar';
 
 dayjs.locale('ko');
 dayjs.extend(relativeTime);
@@ -96,13 +98,7 @@ const Post: VFC = () => {
           <p>작성시간 : {dayjs(postData.createdAt).fromNow()}</p>
           <p>조회수 : {postData.views}</p>
           {postData.PostImages?.map((image) => (
-            <img
-              width="300px"
-              height="auto"
-              src={`http://localhost:7005/${image.src}`}
-              alt={image.src}
-              key={image.src}
-            />
+            <img width="300px" height="auto" src={`${backUrl}/${image.src}`} alt={image.src} key={image.src} />
           ))}
           <p>{postData.content}</p>
           {userData?.id === postData.UserId && <Link to={`/post/${postId}/update`}>수정</Link>}
@@ -115,15 +111,7 @@ const Post: VFC = () => {
             <div css={commentContainerStyle}>
               <div css={commentStyle}>
                 {comment.replyId !== comment.id && <div css={replyStyle} />}
-                <img
-                  css={avatar}
-                  src={
-                    comment.User.image.startsWith('http://')
-                      ? comment.User.image
-                      : `http://localhost:7005/${comment.User.image}` || 'http://localhost:7005/placeholder-profile.png'
-                  }
-                  alt={comment.User.image || 'http://localhost:7005/placeholder-profile.png'}
-                />
+                <Avatar image={comment.User.image} />
                 <div>{comment.User.nickname}</div>
                 <div>{dayjs(comment.createdAt).fromNow()}</div>
                 <div>{comment.content}</div>
@@ -148,13 +136,6 @@ const commentStyle = css`
 
   margin: 1rem 0;
   border-bottom: 1px solid rgba(0, 0, 0, 0.2);
-`;
-
-const avatar = css`
-  width: 2.5rem;
-  height: 2.5rem;
-  border-radius: 50%;
-  object-fit: cover;
 `;
 
 const commentContainerStyle = css`

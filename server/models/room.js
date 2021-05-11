@@ -9,6 +9,28 @@ module.exports = class Room extends Model {
           type: DataTypes.STRING(30),
           allowNull: false,
         },
+        userLimit: {
+          type: DataTypes.TINYINT,
+          allowNull: false,
+        },
+        origin: {
+          // 출발지
+          type: DataTypes.STRING(100),
+        },
+        destination: {
+          // 도착지
+          type: DataTypes.STRING(100),
+        },
+        startAt: {
+          // 만나는 시간
+          type: DataTypes.DATE,
+          defaultValue: DataTypes.NOW,
+        },
+        gender: {
+          // 성별
+          type: DataTypes.STRING,
+          allowNull: true,
+        },
       },
       {
         modelName: 'Room',
