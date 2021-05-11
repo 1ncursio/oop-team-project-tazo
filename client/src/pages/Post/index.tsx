@@ -90,7 +90,7 @@ const Post: VFC = () => {
   );
 
   return (
-    <>
+    <div css={postStyle}>
       {postData && (
         <>
           <h2>{postData.title}</h2>
@@ -126,9 +126,13 @@ const Post: VFC = () => {
           ))}
         </>
       )}
-    </>
+    </div>
   );
 };
+
+const postStyle = css`
+  padding-bottom: 3rem;
+`;
 
 const commentStyle = css`
   display: flex;

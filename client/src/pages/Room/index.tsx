@@ -5,24 +5,43 @@ import useInput from '@hooks/useInput';
 import { IRoom } from '@typings/IRoom';
 import fetcher from '@utils/fetcher';
 import axios from 'axios';
-import React, { useCallback } from 'react';
+import React, { useCallback, useRef } from 'react';
 import { useParams } from 'react-router';
 import useSWR from 'swr';
+import { Scrollbars } from 'react-custom-scrollbars-2';
 
 const Room = () => {
   const { roomId } = useParams<{ roomId: string }>();
-  const [content, onChangeContent] = useInput('');
+  const [content, onChangeContent, setContent] = useInput('');
+
+  const scrollbarRef = useRef<Scrollbars>(null);
 
   const { data: roomData } = useSWR<IRoom>(`/rooms/${roomId}`, fetcher);
 
   const onSubmitChat = useCallback(
     async (e) => {
       e.preventDefault();
-      console.log({ content });
-      const { data } = await axios.post(`/rooms/${roomId}/chat`, { content });
-      console.log(data);
+      try {
+        const { data } = await axios.post(`/rooms/${roomId}/chat`, { content });
+        console.log(data);
+        setContent('');
+      } catch (error) {
+        console.error(error);
+      }
     },
-    [roomId, content]
+    [roomId, content, setContent]
+  );
+
+  const onKeyDownChat = useCallback(
+    (e) => {
+      if (e.key === 'Enter') {
+        if (!e.shiftKey) {
+          e.preventDefault();
+          onSubmitChat(e);
+        }
+      }
+    },
+    [onSubmitChat]
   );
 
   return (
@@ -39,8 +58,8 @@ const Room = () => {
           )}
         </div>
       ))}
-      <ChatList />
-      <form css={formLayout} onSubmit={onSubmitChat}>
+      <ChatList scrollbarRef={scrollbarRef} />
+      <form onSubmit={onSubmitChat} onKeyDown={onKeyDownChat}>
         <textarea value={content} onChange={onChangeContent} rows={2} />
         <button type="submit">전송</button>
       </form>
@@ -49,28 +68,39 @@ const Room = () => {
 };
 
 const roomStyle = css`
+  display: flex;
+  height: 100vh;
+  flex-direction: column;
+  width: inherit;
+  padding-bottom: 3rem;
   header {
     height: 3rem;
+    /* height: 3rem; */
     background-color: rgba(30, 30, 30, 0.1);
+  }
+
+  form {
+    height: 3rem;
+    width: inherit;
+    display: flex;
+
+    textarea {
+      /* height: 3rem; */
+      font-family: inherit;
+      font-size: 1rem;
+      flex: 10;
+      resize: none;
+    }
+
+    button {
+      flex: 1;
+    }
   }
 `;
 
 const memberStyle = css`
   display: flex;
   gap: 1rem;
-`;
-
-const formLayout = css`
-  display: flex;
-
-  textarea {
-    flex: 10;
-    resize: none;
-  }
-
-  button {
-    flex: 1;
-  }
 `;
 
 export default Room;

@@ -15,13 +15,15 @@ const Avatar = ({ user }: { user: IUser }) => {
       ) : (
         <img src={`${backUrl}/placeholder-profile.png`} alt="프로필 사진" />
       )}
-      <div>{user.nickname}</div>
+      <span>{user.nickname}</span>
     </div>
   );
 };
 
 const avatar = css`
   display: flex;
+  justify-content: center;
+  align-items: center;
   gap: 0.8rem;
 
   img {

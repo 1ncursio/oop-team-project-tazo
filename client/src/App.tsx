@@ -56,7 +56,6 @@ const globalStyle = css`
   #root {
     width: 1280px;
     background-color: white;
-    padding-bottom: 3rem;
   }
 `;
 

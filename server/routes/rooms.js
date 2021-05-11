@@ -119,7 +119,7 @@ router.get('/:roomId', isLoggedIn, async (req, res, next) => {
 
 */
 
-router.get('/:roomId/chat', async (req, res, next) => {
+router.get('/:roomId/chat', isLoggedIn, async (req, res, next) => {
   try {
     const { roomId } = req.params;
 
@@ -127,7 +127,7 @@ router.get('/:roomId/chat', async (req, res, next) => {
     if (!room) {
       return res.status(404).json({ success: false, message: STATUS_404_ROOM });
     }
-    res.status(200).json(await room.getRoomChats());
+    res.status(200).json(await room.getRoomChats({ include: [{ model: User }] }));
   } catch (error) {
     console.error(error);
     next(error);
@@ -154,6 +154,8 @@ router.post('/:roomId/chat', isLoggedIn, async (req, res, next) => {
       { transaction }
     );
 
+    await transaction.commit();
+
     const chatWithUser = await RoomChat.findOne({
       where: { id: chat.id },
       include: [
@@ -163,12 +165,11 @@ router.post('/:roomId/chat', isLoggedIn, async (req, res, next) => {
       ],
     });
 
-    await transaction.commit();
-
     const io = req.app.get('io');
-    io.of('/ws-room').to(`/ws-room-${roomId}`).emit('chat', chatWithUser);
+    // io.of('/ws-room').to(`/ws-room-${roomId}`).emit('chat', chatWithUser);
+    io.of(`/ws-room-${roomId}`).emit('chat', chatWithUser);
 
-    return res.status(200).json({ success: true });
+    return res.status(200).json({ success: true, chat: chatWithUser });
   } catch (error) {
     console.error(error);
     transaction.rollback();

@@ -1,3 +1,5 @@
+import { IUser } from './IUser';
+
 export interface IChat {
   id: number;
   content: string;
@@ -5,4 +7,5 @@ export interface IChat {
   updatedAt: string;
   RoomId: number;
   UserId: number;
+  User: IUser;
 }

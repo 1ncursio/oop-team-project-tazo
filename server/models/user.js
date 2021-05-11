@@ -68,6 +68,7 @@ module.exports = class User extends Model {
   static associate(db) {
     db.User.hasMany(db.Post);
     db.User.hasMany(db.PostComment);
+    db.User.hasMany(db.RoomChat);
     db.User.hasOne(db.Room, { as: 'Owned', foreignKey: 'OwnerId' });
     db.User.belongsToMany(db.Room, { through: db.RoomMember, as: 'Rooms' });
   }

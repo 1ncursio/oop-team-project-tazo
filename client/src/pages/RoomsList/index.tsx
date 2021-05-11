@@ -21,14 +21,13 @@ const RoomsList = () => {
   const createRoom = useCallback(
     async (data: IRoom) => {
       console.log('createRoom 이벤트 발동');
-      await mutateRooms(
+      const rooms = await mutateRooms(
         produce((roomsData) => {
           roomsData?.unshift(data);
         }),
         false
-      ).then((rooms) => {
-        console.log(rooms);
-      });
+      );
+      console.log(rooms);
     },
     [mutateRooms]
   );
@@ -89,7 +88,9 @@ const RoomsList = () => {
 
 const roomStyle = css`
   display: flex;
+
   gap: 1rem;
+  padding-bottom: 3rem;
 `;
 
 const formLayout = css`
