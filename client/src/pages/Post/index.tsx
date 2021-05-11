@@ -111,8 +111,7 @@ const Post: VFC = () => {
             <div css={commentContainerStyle}>
               <div css={commentStyle}>
                 {comment.replyId !== comment.id && <div css={replyStyle} />}
-                <Avatar image={comment.User.image} />
-                <div>{comment.User.nickname}</div>
+                <Avatar user={comment.User} />
                 <div>{dayjs(comment.createdAt).fromNow()}</div>
                 <div>{comment.content}</div>
                 {comment.replyId === comment.id && <button onClick={() => onClickReply(comment.replyId)}>답글</button>}
@@ -133,6 +132,7 @@ const Post: VFC = () => {
 
 const commentStyle = css`
   display: flex;
+  gap: 0.5rem;
 
   margin: 1rem 0;
   border-bottom: 1px solid rgba(0, 0, 0, 0.2);

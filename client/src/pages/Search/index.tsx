@@ -34,8 +34,7 @@ const Search = () => {
       </form>
       {usersData?.map((user) => (
         <div css={usersStyle}>
-          <Avatar image={user.image} />
-          <div>{user.nickname}</div>
+          <Avatar user={user} />
         </div>
       ))}
     </div>

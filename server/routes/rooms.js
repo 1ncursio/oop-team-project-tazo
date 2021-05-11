@@ -12,6 +12,11 @@ router.get('/', async (req, res, next) => {
           as: 'Owner',
           attributes: ['id', 'nickname', 'image'],
         },
+        {
+          model: User,
+          as: 'Members',
+          attributes: ['id', 'nickname', 'image'],
+        },
       ],
     });
     return res.json(rooms);
@@ -41,6 +46,11 @@ router.post('/', isLoggedIn, async (req, res, next) => {
           as: 'Owner',
           attributes: ['id', 'nickname', 'image'],
         },
+        {
+          model: User,
+          as: 'Members',
+          attributes: ['id', 'nickname', 'image'],
+        },
       ],
     });
 
@@ -68,6 +78,36 @@ router.delete('/:roomId', isLoggedIn, async (req, res, next) => {
   } catch (error) {
     console.error(error);
     await transaction.rollback();
+    next(error);
+  }
+});
+
+router.get('/:roomId', async (req, res, next) => {
+  try {
+    const { roomId } = req.params;
+    const room = await Room.findOne({
+      where: { id: roomId },
+      include: [
+        {
+          model: User, // 포스트 작성자
+          as: 'Owner',
+          attributes: ['id', 'nickname', 'image'],
+        },
+        {
+          model: User,
+          as: 'Members',
+          attributes: ['id', 'nickname', 'image'],
+        },
+      ],
+    });
+
+    if (!room) {
+      return res.status(404).json({ success: false, message: '존재하지 않는 방입니다.' });
+    }
+
+    res.status(200).json(room);
+  } catch (error) {
+    console.error(error);
     next(error);
   }
 });
