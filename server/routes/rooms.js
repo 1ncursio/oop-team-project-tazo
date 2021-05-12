@@ -4,6 +4,8 @@ const { sequelize, Room, User, RoomChat } = require('../models');
 const { STATUS_404_ROOM } = require('../utils/message');
 const { isLoggedIn } = require('./middlewares');
 
+const upload = require('../utils/upload');
+
 router.get('/', async (req, res, next) => {
   try {
     const rooms = await Room.findAll({
@@ -135,6 +137,50 @@ router.get('/:roomId/chat', isLoggedIn, async (req, res, next) => {
 });
 
 router.post('/:roomId/chat', isLoggedIn, async (req, res, next) => {
+  const transaction = await sequelize.transaction();
+  try {
+    const { roomId } = req.params;
+    const { content } = req.body;
+
+    const room = await Room.findOne({ where: { id: roomId } });
+    if (!room) {
+      return res.status(404).json({ success: false, message: STATUS_404_ROOM });
+    }
+
+    const chat = await RoomChat.create(
+      {
+        UserId: req.user.id,
+        RoomId: roomId,
+        content,
+      },
+      { transaction }
+    );
+
+    await transaction.commit();
+
+    const chatWithUser = await RoomChat.findOne({
+      where: { id: chat.id },
+      include: [
+        {
+          model: User,
+          attributes: ['id', 'nickname', 'image'],
+        },
+      ],
+    });
+
+    const io = req.app.get('io');
+    // io.of('/ws-room').to(`/ws-room-${roomId}`).emit('chat', chatWithUser);
+    io.of(`/ws-room-${roomId}`).emit('chat', chatWithUser);
+
+    return res.status(200).json({ success: true, chat: chatWithUser });
+  } catch (error) {
+    console.error(error);
+    transaction.rollback();
+    next(error);
+  }
+});
+
+router.post('/:roomId/image', isLoggedIn, upload.array('image'), async (req, res, next) => {
   const transaction = await sequelize.transaction();
   try {
     const { roomId } = req.params;

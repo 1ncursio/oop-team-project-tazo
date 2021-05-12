@@ -7,27 +7,14 @@ const { isLoggedIn } = require('./middlewares');
 const { Post, PostComment, User, PostImage } = require('../models');
 const { STATUS_404_POST } = require('../utils/message');
 
+const upload = require('../utils/upload');
+
 try {
   fs.accessSync('uploads');
 } catch (error) {
   console.log('uploads 폴더가 없으므로 생성합니다.');
   fs.mkdirSync('uploads');
 }
-
-const upload = multer({
-  storage: multer.diskStorage({
-    destination(req, file, done) {
-      done(null, 'uploads');
-    },
-    filename(req, file, done) {
-      // 제로초.png
-      // const ext = path.extname(file.originalname); // 확장자 추출(.png)
-      // const basename = path.basename(file.originalname, ext); // 제로초
-      done(null, `${Date.now()}_${path.basename(file.originalname)}`); // 제로초_15184712891.png
-    },
-  }),
-  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
-});
 
 //  GET /post
 router.get('/:postId', async (req, res, next) => {

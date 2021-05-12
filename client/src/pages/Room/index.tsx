@@ -15,8 +15,30 @@ const Room = () => {
   const [content, onChangeContent, setContent] = useInput('');
 
   const scrollbarRef = useRef<Scrollbars>(null);
+  const uploadImageRef = useRef<HTMLInputElement>(null);
 
   const { data: roomData } = useSWR<IRoom>(`/rooms/${roomId}`, fetcher);
+
+  const onClickUpload = useCallback(() => {
+    uploadImageRef?.current?.click();
+  }, []);
+
+  const onUploadImage = useCallback(
+    async (e) => {
+      console.log(e.target.files);
+      try {
+        const formData = new FormData();
+        [].forEach.call(e.target.files, (file) => {
+          formData.append('image', file);
+        });
+        const { data } = await axios.post(`/room/${roomId}/image`);
+        console.log(data);
+      } catch (error) {
+        console.error(error);
+      }
+    },
+    [roomId]
+  );
 
   const onSubmitChat = useCallback(
     async (e) => {
@@ -60,8 +82,12 @@ const Room = () => {
         </div>
       ))}
       <ChatList scrollbarRef={scrollbarRef} />
-      <form onSubmit={onSubmitChat} onKeyDown={onKeyDownChat}>
-        <textarea value={content} onChange={onChangeContent} rows={3} />
+      <form onSubmit={onSubmitChat} onKeyDown={onKeyDownChat} encType="multipart/form-data">
+        <input type="file" hidden onChange={onUploadImage} ref={uploadImageRef} multiple />
+        <button type="button" onClick={onClickUpload}>
+          사진 업로드
+        </button>
+        <textarea value={content} onChange={onChangeContent} rows={2} />
         <button type="submit">전송</button>
       </form>
     </div>
@@ -76,17 +102,14 @@ const roomStyle = css`
   padding-bottom: 3rem;
   header {
     height: 3rem;
-    /* height: 3rem; */
     background-color: rgba(30, 30, 30, 0.1);
   }
 
   form {
-    /* height: 3rem; */
     width: inherit;
     display: flex;
 
     textarea {
-      /* height: 3rem; */
       font-family: inherit;
       font-size: 1rem;
       flex: 10;

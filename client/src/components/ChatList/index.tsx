@@ -3,7 +3,7 @@ import { css } from '@emotion/react';
 import useSocket from '@hooks/useSocket';
 import { IChat } from '@typings/IChat';
 import fetcher from '@utils/fetcher';
-import React, { FC, RefObject, useCallback, useEffect, useMemo } from 'react';
+import React, { FC, RefObject, useCallback, useEffect } from 'react';
 import { useParams } from 'react-router';
 import useSWR from 'swr';
 import produce from 'immer';
