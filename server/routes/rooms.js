@@ -127,7 +127,7 @@ router.get('/:roomId/chat', isLoggedIn, async (req, res, next) => {
     if (!room) {
       return res.status(404).json({ success: false, message: STATUS_404_ROOM });
     }
-    res.status(200).json(await room.getRoomChats({ include: [{ model: User }] }));
+    res.status(200).json(await room.getRoomChats({ include: [{ model: User, attributes: ['id', 'nickname', 'image'] }] }));
   } catch (error) {
     console.error(error);
     next(error);
@@ -161,6 +161,7 @@ router.post('/:roomId/chat', isLoggedIn, async (req, res, next) => {
       include: [
         {
           model: User,
+          attributes: ['id', 'nickname', 'image'],
         },
       ],
     });

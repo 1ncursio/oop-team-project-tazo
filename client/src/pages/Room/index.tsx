@@ -36,12 +36,13 @@ const Room = () => {
     (e) => {
       if (e.key === 'Enter') {
         if (!e.shiftKey) {
+          if (!content.trim()) return;
           e.preventDefault();
           onSubmitChat(e);
         }
       }
     },
-    [onSubmitChat]
+    [onSubmitChat, content]
   );
 
   return (
@@ -60,7 +61,7 @@ const Room = () => {
       ))}
       <ChatList scrollbarRef={scrollbarRef} />
       <form onSubmit={onSubmitChat} onKeyDown={onKeyDownChat}>
-        <textarea value={content} onChange={onChangeContent} rows={2} />
+        <textarea value={content} onChange={onChangeContent} rows={3} />
         <button type="submit">전송</button>
       </form>
     </div>
@@ -80,7 +81,7 @@ const roomStyle = css`
   }
 
   form {
-    height: 3rem;
+    /* height: 3rem; */
     width: inherit;
     display: flex;
 
