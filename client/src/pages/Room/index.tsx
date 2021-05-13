@@ -26,12 +26,13 @@ const Room = () => {
   const onUploadImage = useCallback(
     async (e) => {
       console.log(e.target.files);
+      // console.log(e.dataTransfer);
       try {
         const formData = new FormData();
         [].forEach.call(e.target.files, (file) => {
           formData.append('image', file);
         });
-        const { data } = await axios.post(`/room/${roomId}/image`);
+        const { data } = await axios.post(`/rooms/${roomId}/image`, formData);
         console.log(data);
       } catch (error) {
         console.error(error);

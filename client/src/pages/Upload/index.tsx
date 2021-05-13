@@ -46,14 +46,14 @@ const Upload = () => {
         alert(error.response.data.message);
       }
     },
-    [title, content, history]
+    [title, content, history, image]
   );
 
   return (
     <form onSubmit={onUpload} css={formLayout} encType="multipart/form-data">
       <input type="text" placeholder="제목" value={title} onChange={onChangeTitle} />
       <input type="file" onChange={onChangeImages} />
-      {image && <img src={`${backUrl}/${image}`} alt={image} />}
+      {image && <img src={`${backUrl}/uploads/${image}`} alt={image} />}
       <textarea placeholder="내용" value={content} onChange={onChangeContent} rows={5} />
       <input type="text" placeholder="시간" />
       <input type="text" placeholder="출발지" />

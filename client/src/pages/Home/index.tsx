@@ -111,7 +111,7 @@ const Home = () => {
                 src={
                   userData.image.startsWith('http://')
                     ? userData.image
-                    : `${backUrl}/${userData.image}` || `${backUrl}/placeholder-profile.png`
+                    : `${backUrl}/uploads/${userData.image}` || `${backUrl}/placeholder-profile.png`
                 }
                 alt="개꿀"
               />

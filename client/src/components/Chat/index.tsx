@@ -1,10 +1,11 @@
 import Avatar from '@components/Avatar';
 import { css } from '@emotion/react';
 import { IChat } from '@typings/IChat';
-import React, { FC } from 'react';
+import React, { FC, useMemo } from 'react';
 import dayjs from 'dayjs';
 import 'dayjs/locale/ko';
 import relativeTime from 'dayjs/plugin/relativeTime';
+import backUrl from '@utils/backUrl';
 
 dayjs.locale('ko');
 dayjs.extend(relativeTime);
@@ -16,10 +17,20 @@ interface Props {
 }
 
 const Chat: FC<Props> = ({ chat, isMe, isFirst }) => {
+  const content = useMemo(
+    () =>
+      chat.content.startsWith('uploads\\') || chat.content.startsWith('uploads/') ? (
+        <img src={`${backUrl}/${chat.content}`} alt={chat.content} css={imageChatStyle} />
+      ) : (
+        chat.content
+      ),
+    [chat.content]
+  );
+
   return (
     <div css={chatStyle(isMe)}>
       {!isMe && <Avatar user={chat.User} />}
-      <p css={contentStyle}>{chat.content}</p>
+      <p css={contentStyle}>{content}</p>
       {isFirst && <span className="datetime">{dayjs(chat.createdAt).format('a h:mm')}</span>}
     </div>
   );
@@ -47,6 +58,11 @@ const contentStyle = css`
   padding: 0.5rem;
   border-radius: 0.5rem;
   max-width: 30rem;
+`;
+
+const imageChatStyle = css`
+  max-width: 15rem;
+  height: auto;
 `;
 
 export default Chat;

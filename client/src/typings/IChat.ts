@@ -5,7 +5,7 @@ export interface IChat {
   content: string;
   createdAt: string;
   updatedAt: string;
-  RoomId: number;
   UserId: number;
+  RoomId: number;
   User: IUser;
 }

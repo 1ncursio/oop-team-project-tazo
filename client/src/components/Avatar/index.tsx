@@ -10,7 +10,7 @@ const Avatar = ({ user }: { user: IUser }) => {
         user.image.startsWith('http://') ? (
           <img src={user.image} alt="프로필 사진" />
         ) : (
-          <img src={`${backUrl}/${user.image}`} alt="프로필 사진" />
+          <img src={`${backUrl}/uploads/${user.image}`} alt="프로필 사진" />
         )
       ) : (
         <img src={`${backUrl}/placeholder-profile.png`} alt="프로필 사진" />

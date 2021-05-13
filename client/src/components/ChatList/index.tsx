@@ -40,7 +40,9 @@ const ChatList: FC<Props> = ({ scrollbarRef }) => {
         }),
         false
       );
-      scrollbarRef?.current?.scrollToBottom();
+      setTimeout(() => {
+        scrollbarRef?.current?.scrollToBottom();
+      }, 100);
     },
     [mutateChat, scrollbarRef]
   );

@@ -2,11 +2,13 @@ export interface IUser {
   id: number;
   email: string;
   nickname: string;
-  image: string;
-  introduction: string;
-  provider: string;
-  snsId: number;
-  status: string;
+  image: string | null;
+  introduction: string | null;
+  provider: 'local' | 'kakao';
+  snsId: string | null;
+  status: number;
+  gender: string | null;
   role: number;
-  gender: string;
+  createdAt: string;
+  updatedAt: string;
 }
