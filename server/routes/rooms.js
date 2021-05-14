@@ -4,7 +4,7 @@ const { sequelize, Room, User, RoomChat } = require('../models');
 const { STATUS_404_ROOM } = require('../utils/message');
 const { isLoggedIn } = require('./middlewares');
 
-const upload = require('../utils/upload');
+const { upload } = require('../utils/upload');
 
 router.get('/', async (req, res, next) => {
   try {
@@ -129,7 +129,9 @@ router.get('/:roomId/chat', isLoggedIn, async (req, res, next) => {
     if (!room) {
       return res.status(404).json({ success: false, message: STATUS_404_ROOM });
     }
-    res.status(200).json(await room.getRoomChats({ include: [{ model: User, attributes: ['id', 'nickname', 'image'] }] }));
+    res
+      .status(200)
+      .json(await room.getRoomChats({ include: [{ model: User, attributes: ['id', 'nickname', 'image'] }] }));
   } catch (error) {
     console.error(error);
     next(error);

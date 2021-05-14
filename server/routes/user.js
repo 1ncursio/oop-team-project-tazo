@@ -6,10 +6,10 @@ const { User } = require('../models');
 const { STATUS_404_USER } = require('../utils/message');
 const { isLoggedIn } = require('./middlewares');
 
-const upload = require('../utils/upload');
+const { upload, uploadGoogleStorage } = require('../utils/upload');
 
 // POST /user/image
-router.post('/image', isLoggedIn, upload.single('image'), async (req, res, next) => {
+router.post('/image', isLoggedIn, uploadGoogleStorage.single('image'), async (req, res, next) => {
   res.json(req.file.filename);
 });
 

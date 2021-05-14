@@ -7,7 +7,7 @@ const { isLoggedIn } = require('./middlewares');
 const { Post, PostComment, User, PostImage } = require('../models');
 const { STATUS_404_POST } = require('../utils/message');
 
-const upload = require('../utils/upload');
+const { upload } = require('../utils/upload');
 
 try {
   fs.accessSync('uploads');
