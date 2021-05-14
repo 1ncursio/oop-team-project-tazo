@@ -30,7 +30,7 @@ const isProduction = process.env.NODE_ENV === 'production';
 dotenv.config();
 
 db.sequelize
-  .sync({ alter: true })
+  .sync()
   .then(() => {
     console.log('MYSQL 연결 성공');
   })
@@ -44,7 +44,7 @@ if (isProduction) {
   app.use(helmet());
   app.use(
     cors({
-      origin: false,
+      origin: true,
       credentials: true,
     })
   );
@@ -70,8 +70,9 @@ app.use(
     secret: process.env.COOKIE_SECRET,
     cookie: {
       httpOnly: true,
-      secure: isProduction,
-      domain: isProduction && '.test.domain',
+      // secure: isProduction,
+      secure: false,
+      domain: isProduction && '.tazoapp.site',
     },
   })
 );
