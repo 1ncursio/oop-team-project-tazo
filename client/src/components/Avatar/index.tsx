@@ -6,12 +6,12 @@ import React from 'react';
 const Avatar = ({ user }: { user: IUser }) => {
   return (
     <div css={avatar}>
-      {user.image ? (
-        user.image.startsWith('http://') ? (
-          <img src={user.image} alt="프로필 사진" />
-        ) : (
-          <img src={`${backUrl}/uploads/${user.image}`} alt="프로필 사진" />
-        )
+      {/* {user.image && (
+        (user.image.startsWith('http://') || user.image.startsWith('https://')) ? 
+         ( <img src={user.image} alt="프로필 사진" />  )   : (  <img src={`${backUrl}/placeholder-profile.png`} alt="프로필 사진" />  )
+      } */}
+      {user?.image?.startsWith('http://') || user?.image?.startsWith('https://') ? (
+        <img src={user.image} alt="프로필 사진" />
       ) : (
         <img src={`${backUrl}/placeholder-profile.png`} alt="프로필 사진" />
       )}

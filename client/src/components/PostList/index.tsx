@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom';
 import dayjs from 'dayjs';
 import 'dayjs/locale/ko';
 import relativeTime from 'dayjs/plugin/relativeTime';
+import backUrl from '@utils/backUrl';
 
 dayjs.locale('ko');
 dayjs.extend(relativeTime);
@@ -19,6 +20,18 @@ const PostList = ({ post }: PostListProps) => {
       <h2>
         <Link to={`/post/${post.id}`}>{post.title}</Link>
       </h2>
+      {post?.PostImages?.[0] && (
+        <img
+          width="300px"
+          height="auto"
+          src={
+            post.PostImages[0].src.startsWith('http://') || post.PostImages[0].src.startsWith('https://')
+              ? post.PostImages[0].src
+              : `${backUrl}/placeholder-profile.png`
+          }
+          alt="개꿀"
+        />
+      )}
       <p>작성자 : {post.User.nickname}</p>
       <p>작성시간 : {dayjs(post.createdAt).fromNow()}</p>
       <p>{post.content}</p>

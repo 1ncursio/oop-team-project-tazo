@@ -98,7 +98,7 @@ const Post: VFC = () => {
           <p>작성시간 : {dayjs(postData.createdAt).fromNow()}</p>
           <p>조회수 : {postData.views}</p>
           {postData.PostImages?.map((image) => (
-            <img width="300px" height="auto" src={`${backUrl}/uploads/${image.src}`} alt={image.src} key={image.src} />
+            <img width="300px" height="auto" src={image.src} alt={image.src} key={image.src} />
           ))}
           <p>{postData.content}</p>
           {userData?.id === postData.UserId && <Link to={`/post/${postId}/update`}>수정</Link>}

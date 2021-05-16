@@ -7,14 +7,7 @@ const { isLoggedIn } = require('./middlewares');
 const { Post, PostComment, User, PostImage } = require('../models');
 const { STATUS_404_POST } = require('../utils/message');
 
-const { upload } = require('../utils/upload');
-
-try {
-  fs.accessSync('uploads');
-} catch (error) {
-  console.log('uploads 폴더가 없으므로 생성합니다.');
-  fs.mkdirSync('uploads');
-}
+const { uploadGCS, storage, bucket } = require('../utils/upload');
 
 //  GET /post
 router.get('/:postId', async (req, res, next) => {
@@ -173,10 +166,30 @@ router.delete('/:postId', isLoggedIn, async (req, res, next) => {
 /* Image Upload route */
 
 // POST /post/image
-router.post('/image', isLoggedIn, upload.single('image'), async (req, res, next) => {
-  console.log(req.file);
-  // console.log(req.files);
-  res.json(req.file.filename);
+router.post('/image', isLoggedIn, uploadGCS.single('image'), async (req, res, next) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ success: false, message: '이미지가 업로드되지 않았습니다.' });
+    }
+
+    const blob = bucket.file(`uploads/${Date.now()}_${req.file.originalname.replace(' ', '_')}`);
+    const blobStream = blob.createWriteStream();
+
+    blobStream.on('error', (err) => {
+      next(err);
+    });
+
+    blobStream.on('finish', async () => {
+      const publicUrl = `https://storage.googleapis.com/${bucket.name}/${blob.name}`;
+
+      res.status(200).json({ success: true, image: publicUrl });
+    });
+
+    blobStream.end(req.file.buffer);
+  } catch (error) {
+    console.error(error);
+    next(error); // status 500
+  }
 });
 
 /* Comment routes */

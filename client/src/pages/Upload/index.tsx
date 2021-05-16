@@ -25,8 +25,10 @@ const Upload = () => {
         [].forEach.call(e.target.files, (file) => {
           imageFormData.append('image', file);
         });
-        const { data } = await axios.post('/post/image', imageFormData);
-        setImage(data);
+        const {
+          data: { image },
+        } = await axios.post('/post/image', imageFormData);
+        setImage(image);
       } catch (error) {
         console.error(error);
       }
@@ -53,7 +55,7 @@ const Upload = () => {
     <form onSubmit={onUpload} css={formLayout} encType="multipart/form-data">
       <input type="text" placeholder="제목" value={title} onChange={onChangeTitle} />
       <input type="file" onChange={onChangeImages} />
-      {image && <img src={`${backUrl}/uploads/${image}`} alt={image} />}
+      {image && <img src={image} alt={image} />}
       <textarea placeholder="내용" value={content} onChange={onChangeContent} rows={5} />
       <input type="text" placeholder="시간" />
       <input type="text" placeholder="출발지" />

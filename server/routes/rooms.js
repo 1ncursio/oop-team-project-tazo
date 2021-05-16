@@ -4,7 +4,7 @@ const { sequelize, Room, User, RoomChat } = require('../models');
 const { STATUS_404_ROOM } = require('../utils/message');
 const { isLoggedIn } = require('./middlewares');
 
-const { upload } = require('../utils/upload');
+const { upload, uploadGCS, storage, bucket } = require('../utils/upload');
 
 router.get('/', async (req, res, next) => {
   try {
@@ -129,9 +129,7 @@ router.get('/:roomId/chat', isLoggedIn, async (req, res, next) => {
     if (!room) {
       return res.status(404).json({ success: false, message: STATUS_404_ROOM });
     }
-    res
-      .status(200)
-      .json(await room.getRoomChats({ include: [{ model: User, attributes: ['id', 'nickname', 'image'] }] }));
+    res.status(200).json(await room.getRoomChats({ include: [{ model: User, attributes: ['id', 'nickname', 'image'] }] }));
   } catch (error) {
     console.error(error);
     next(error);
@@ -182,7 +180,7 @@ router.post('/:roomId/chat', isLoggedIn, async (req, res, next) => {
   }
 });
 
-router.post('/:roomId/image', isLoggedIn, upload.array('image'), async (req, res, next) => {
+router.post('/:roomId/image', isLoggedIn, uploadGCS.array('image'), async (req, res, next) => {
   try {
     const { roomId } = req.params;
 
@@ -192,25 +190,41 @@ router.post('/:roomId/image', isLoggedIn, upload.array('image'), async (req, res
     }
 
     for (let i = 0; i < req.files.length; i++) {
-      const chat = await RoomChat.create({
-        UserId: req.user.id,
-        RoomId: roomId,
-        content: req.files[i].path,
+      console.log('req.files[i].originalname', req.files[i].originalname);
+
+      const blob = bucket.file(`uploads/${Date.now()}_${req.files[i].originalname.replace(' ', '_')}`);
+      const blobStream = blob.createWriteStream();
+
+      blobStream.on('error', (err) => {
+        next(err);
       });
 
-      const chatWithUser = await RoomChat.findOne({
-        where: { id: chat.id },
-        include: [
-          {
-            model: User,
-            attributes: ['id', 'nickname', 'image'],
-          },
-        ],
+      blobStream.on('finish', async () => {
+        const publicUrl = `https://storage.googleapis.com/${bucket.name}/${blob.name}`;
+        console.log('publicUrl', publicUrl);
+
+        const chat = await RoomChat.create({
+          UserId: req.user.id,
+          RoomId: roomId,
+          content: publicUrl,
+        });
+
+        const chatWithUser = await RoomChat.findOne({
+          where: { id: chat.id },
+          include: [
+            {
+              model: User,
+              attributes: ['id', 'nickname', 'image'],
+            },
+          ],
+        });
+
+        const io = req.app.get('io');
+        // io.of('/ws-room').to(`/ws-room-${roomId}`).emit('chat', chatWithUser);
+        io.of(`/ws-room-${roomId}`).emit('chat', chatWithUser);
       });
 
-      const io = req.app.get('io');
-      // io.of('/ws-room').to(`/ws-room-${roomId}`).emit('chat', chatWithUser);
-      io.of(`/ws-room-${roomId}`).emit('chat', chatWithUser);
+      blobStream.end(req.files[i].buffer);
     }
 
     return res.status(200).json({ success: true });

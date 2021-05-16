@@ -1,31 +1,40 @@
 const express = require('express');
 const router = express.Router();
-const multer = require('multer');
 const path = require('path');
 const { User } = require('../models');
 const { STATUS_404_USER } = require('../utils/message');
 const { isLoggedIn } = require('./middlewares');
 
-const { upload, uploadGoogleStorage } = require('../utils/upload');
-
-// POST /user/image
-router.post('/image', isLoggedIn, uploadGoogleStorage.single('image'), async (req, res, next) => {
-  res.json(req.file.filename);
-});
+const { uploadGCS, storage, bucket } = require('../utils/upload');
 
 // PATCH /user/image
-router.patch('/image', isLoggedIn, async (req, res, next) => {
+router.patch('/image', isLoggedIn, uploadGCS.single('image'), async (req, res, next) => {
   try {
-    const { image } = req.body;
+    if (!req.file) {
+      return res.status(400).json({ success: false, message: '이미지가 업로드되지 않았습니다.' });
+    }
 
-    await User.update(
-      {
-        image,
-      },
-      { where: { id: req.user.id } }
-    );
+    const blob = bucket.file(`uploads/${Date.now()}_${req.file.originalname.replace(' ', '_')}`);
+    const blobStream = blob.createWriteStream();
 
-    return res.status(200).json({ success: true });
+    blobStream.on('error', (err) => {
+      next(err);
+    });
+
+    blobStream.on('finish', async () => {
+      const publicUrl = `https://storage.googleapis.com/${bucket.name}/${blob.name}`;
+
+      await User.update(
+        {
+          image: publicUrl,
+        },
+        { where: { id: req.user.id } }
+      );
+
+      res.status(200).json({ success: true, image: publicUrl });
+    });
+
+    blobStream.end(req.file.buffer);
   } catch (error) {
     console.error(error);
     next(error); // status 500

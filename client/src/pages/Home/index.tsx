@@ -60,7 +60,7 @@ const Home = () => {
         console.error(error);
       }
     },
-    [nickname, introduction]
+    [nickname, introduction, userRevalidate]
   );
 
   const onChangeImage = useCallback(
@@ -71,8 +71,8 @@ const Home = () => {
         [].forEach.call(e.target.files, (file) => {
           imageFormData.append('image', file);
         });
-        const { data: image } = await axios.post('/user/image', imageFormData);
-        await axios.patch('/user/image', { image });
+        const { data: image } = await axios.patch('/user/image', imageFormData);
+        // await axios.patch('/user/image', { image });
         userRevalidate();
       } catch (error) {
         console.error(error);
@@ -109,9 +109,9 @@ const Home = () => {
                 width="300px"
                 height="auto"
                 src={
-                  userData.image.startsWith('http://')
+                  userData.image.startsWith('http://') || userData.image.startsWith('https://')
                     ? userData.image
-                    : `${backUrl}/uploads/${userData.image}` || `${backUrl}/placeholder-profile.png`
+                    : `${backUrl}/placeholder-profile.png`
                 }
                 alt="개꿀"
               />

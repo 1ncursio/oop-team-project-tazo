@@ -2,7 +2,7 @@ const express = require('express');
 const { Op } = require('sequelize');
 const router = express.Router();
 
-const { Post, PostComment, User } = require('../models');
+const { Post, PostComment, User, PostImage } = require('../models');
 
 //  GET api/posts
 router.get('/', async (req, res, next) => {
@@ -24,10 +24,10 @@ router.get('/', async (req, res, next) => {
           model: User, // 포스트 작성자
           attributes: ['id', 'nickname', 'image'],
         },
-        // {
-        //   model: PostImage,
-        //   attributes: ['src'],
-        // },
+        {
+          model: PostImage,
+          attributes: ['src'],
+        },
         {
           model: PostComment,
           include: [
