@@ -5,7 +5,7 @@ const { User } = require('../models');
 const { STATUS_404_USER } = require('../utils/message');
 const { isLoggedIn } = require('./middlewares');
 
-const { uploadGCS, storage, bucket } = require('../utils/upload');
+const { uploadGCS, bucket } = require('../utils/upload');
 
 // PATCH /user/image
 router.patch('/image', isLoggedIn, uploadGCS.single('image'), async (req, res, next) => {

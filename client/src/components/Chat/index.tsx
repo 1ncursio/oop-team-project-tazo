@@ -19,8 +19,8 @@ interface Props {
 const Chat: FC<Props> = ({ chat, isMe, isFirst }) => {
   const content = useMemo(
     () =>
-      chat.content.startsWith('uploads\\') || chat.content.startsWith('uploads/') ? (
-        <img src={`${backUrl}/${chat.content}`} alt={chat.content} css={imageChatStyle} />
+      chat.content.startsWith('https://storage.googleapis.com/') ? (
+        <img src={chat.content} alt={chat.content} css={imageChatStyle} />
       ) : (
         chat.content
       ),
