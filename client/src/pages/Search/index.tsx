@@ -2,10 +2,8 @@ import Avatar from '@components/Avatar';
 import { css } from '@emotion/react';
 import useInput from '@hooks/useInput';
 import { IUser } from '@typings/IUser';
-import backUrl from '@utils/backUrl';
 import fetcher from '@utils/fetcher';
-import axios from 'axios';
-import React, { useCallback, useEffect } from 'react';
+import React, { useCallback } from 'react';
 import { useHistory, useParams } from 'react-router';
 import useSWR from 'swr';
 

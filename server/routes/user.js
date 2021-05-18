@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const path = require('path');
 const { User } = require('../models');
-const { STATUS_404_USER } = require('../utils/message');
+const { STATUS_404_USER, STATUS_403_EMAIL } = require('../utils/message');
 const { isLoggedIn } = require('./middlewares');
 
 const { uploadGCS, bucket } = require('../utils/upload');
@@ -69,6 +69,23 @@ router.get('/', async (req, res, next) => {
     }
 
     return res.status(200).json(user);
+  } catch (error) {
+    console.error(error);
+    next(error);
+  }
+});
+
+// 이메일 중복 검사 라우터
+router.get('/email/:email', async (req, res, next) => {
+  try {
+    const { email } = req.params;
+    const user = await User.findOne({ where: { email } });
+
+    if (!user) {
+      return res.status(404).json({ success: true, message: STATUS_404_USER });
+    } else {
+      return res.status(403).json({ success: true, message: STATUS_403_EMAIL });
+    }
   } catch (error) {
     console.error(error);
     next(error);

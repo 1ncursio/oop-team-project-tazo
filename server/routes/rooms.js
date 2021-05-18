@@ -1,10 +1,11 @@
 const express = require('express');
 const router = express.Router();
-const { sequelize, Room, User, RoomChat } = require('../models');
-const { STATUS_404_ROOM } = require('../utils/message');
+const { sequelize, Room, User, RoomChat, RoomMember } = require('../models');
+const { STATUS_404_ROOM, STATUS_404_USER } = require('../utils/message');
 const { isLoggedIn } = require('./middlewares');
-
 const { upload, uploadGCS, storage, bucket } = require('../utils/upload');
+
+/* 방 라우터 */
 
 router.get('/', async (req, res, next) => {
   try {
@@ -23,6 +24,36 @@ router.get('/', async (req, res, next) => {
       ],
     });
     return res.json(rooms);
+  } catch (error) {
+    console.error(error);
+    next(error);
+  }
+});
+
+router.get('/:roomId', isLoggedIn, async (req, res, next) => {
+  try {
+    const { roomId } = req.params;
+    const room = await Room.findOne({
+      where: { id: roomId },
+      include: [
+        {
+          model: User, // 포스트 작성자
+          as: 'Owner',
+          attributes: ['id', 'nickname', 'image'],
+        },
+        {
+          model: User,
+          as: 'Members',
+          attributes: ['id', 'nickname', 'image'],
+        },
+      ],
+    });
+
+    if (!room) {
+      return res.status(404).json({ success: false, message: STATUS_404_ROOM });
+    }
+
+    res.status(200).json(room);
   } catch (error) {
     console.error(error);
     next(error);
@@ -77,7 +108,9 @@ router.delete('/:roomId', isLoggedIn, async (req, res, next) => {
     await Room.destroy({ where: { id: roomId }, transaction });
     await transaction.commit();
 
-    res.send('ok');
+    const io = req.app.get('io');
+    io.of('/ws-room').emit('destroyRoom', room);
+    return res.send('ok');
   } catch (error) {
     console.error(error);
     await transaction.rollback();
@@ -85,41 +118,7 @@ router.delete('/:roomId', isLoggedIn, async (req, res, next) => {
   }
 });
 
-router.get('/:roomId', isLoggedIn, async (req, res, next) => {
-  try {
-    const { roomId } = req.params;
-    const room = await Room.findOne({
-      where: { id: roomId },
-      include: [
-        {
-          model: User, // 포스트 작성자
-          as: 'Owner',
-          attributes: ['id', 'nickname', 'image'],
-        },
-        {
-          model: User,
-          as: 'Members',
-          attributes: ['id', 'nickname', 'image'],
-        },
-      ],
-    });
-
-    if (!room) {
-      return res.status(404).json({ success: false, message: STATUS_404_ROOM });
-    }
-
-    res.status(200).json(room);
-  } catch (error) {
-    console.error(error);
-    next(error);
-  }
-});
-
-/*
-
-  채팅 라우터
-
-*/
+/* 채팅 라우터 */
 
 router.get('/:roomId/chat', isLoggedIn, async (req, res, next) => {
   try {
@@ -129,7 +128,9 @@ router.get('/:roomId/chat', isLoggedIn, async (req, res, next) => {
     if (!room) {
       return res.status(404).json({ success: false, message: STATUS_404_ROOM });
     }
-    res.status(200).json(await room.getRoomChats({ include: [{ model: User, attributes: ['id', 'nickname', 'image'] }] }));
+    res
+      .status(200)
+      .json(await room.getRoomChats({ include: [{ model: User, attributes: ['id', 'nickname', 'image'] }] }));
   } catch (error) {
     console.error(error);
     next(error);
@@ -228,6 +229,30 @@ router.post('/:roomId/image', isLoggedIn, uploadGCS.array('image'), async (req, 
     }
 
     return res.status(200).json({ success: true });
+  } catch (error) {
+    console.error(error);
+    next(error);
+  }
+});
+
+/* 멤버 추가 라우터 */
+// /rooms/${roomId}/members/${userData.id}
+router.post('/:roomId/members/:memberId', async (req, res, next) => {
+  try {
+    const { roomId, memberId } = req.params;
+    // 유저가 존재하는지 확인 => 방이 존재하는지 확인 => 있다면 forbidden : 없다면 200
+    const user = await User.findOne({ where: { id: req.user.id } });
+    if (!user) {
+      return res.status(404).json({ success: false, message: STATUS_404_USER });
+    }
+
+    const room = await Room.findOne({ where: { id: roomId } });
+    if (!room) {
+      return res.status(404).json({ success: false, message: STATUS_404_ROOM });
+    }
+
+    const member = await RoomMember.findOrCreate({ where: { id: req.user.id } });
+    // if (member)
   } catch (error) {
     console.error(error);
     next(error);

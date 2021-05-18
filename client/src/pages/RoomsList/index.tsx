@@ -32,6 +32,19 @@ const RoomsList = () => {
     [mutateRooms]
   );
 
+  const destroyRoom = useCallback(
+    async (data: IRoom) => {
+      console.log('destroyRoom 이벤트 발동');
+      const rooms = await mutateRooms(
+        produce((roomsData) => {
+          roomsData?.filter((v: IRoom) => v.id === data.id);
+        })
+      );
+      console.log(rooms);
+    },
+    [mutateRooms]
+  );
+
   useEffect(() => {
     socket?.on('createRoom', createRoom);
     return () => {
@@ -40,6 +53,24 @@ const RoomsList = () => {
       disconnect();
     };
   }, [socket, createRoom, disconnect]);
+
+  useEffect(() => {
+    socket?.on('destroyRoom', destroyRoom);
+
+    return () => {
+      socket?.off('destroyRoom', destroyRoom);
+      console.info('disconnect socket', socket);
+    };
+  }, [socket, destroyRoom, disconnect]);
+
+  const onClickRoom = useCallback(
+    (roomId: number) => async () => {
+      if (!userData) return;
+      const { data } = await axios.post(`/rooms/${roomId}/members/${userData.id}`, { id: userData.id });
+      console.log(data);
+    },
+    [userData]
+  );
 
   const onCreateRoom = useCallback(
     async (e) => {
@@ -69,6 +100,7 @@ const RoomsList = () => {
         <div css={roomStyle} key={room.id}>
           <div>
             <Link to={`/room/${room.id}`}>{room.name}</Link>
+            <a onClick={onClickRoom(room.id)}>{room.name}</a>
           </div>
           <div>{room.Owner.nickname}</div>
           <div>{`방 인원 : ${room.Members.length}/${room.userLimit}`}</div>
