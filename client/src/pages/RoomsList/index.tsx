@@ -8,11 +8,13 @@ import React, { useCallback, useEffect } from 'react';
 import useSWR from 'swr';
 import produce from 'immer';
 import { css } from '@emotion/react';
-import { Link } from 'react-router-dom';
+import { Link, useHistory } from 'react-router-dom';
 
 const RoomsList = () => {
   const [name, onChangeName] = useInput('');
   const [userLimit, onChangeUserLimit] = useInput(4);
+
+  const history = useHistory();
 
   const { data: userData, revalidate: userRevalidate } = useSWR<IUser>('/auth', fetcher);
   const { data: roomsData, mutate: mutateRooms } = useSWR<IRoom[]>('/rooms', fetcher);
@@ -63,13 +65,20 @@ const RoomsList = () => {
     };
   }, [socket, destroyRoom, disconnect]);
 
+  // 방에 입장하기 전에는 post 보냄
+
   const onClickRoom = useCallback(
     (roomId: number) => async () => {
-      if (!userData) return;
-      const { data } = await axios.post(`/rooms/${roomId}/members/${userData.id}`, { id: userData.id });
-      console.log(data);
+      try {
+        const { data } = await axios.post(`/rooms/${roomId}/member`);
+        history.push(`/room/${roomId}`);
+        console.log(data);
+      } catch (error) {
+        console.error(error);
+        alert(error.response.data.message);
+      }
     },
-    [userData]
+    [history]
   );
 
   const onCreateRoom = useCallback(
@@ -99,8 +108,8 @@ const RoomsList = () => {
       {roomsData?.map((room) => (
         <div css={roomStyle} key={room.id}>
           <div>
-            <Link to={`/room/${room.id}`}>{room.name}</Link>
-            <a onClick={onClickRoom(room.id)}>{room.name}</a>
+            <span>{room.name}</span>
+            <button onClick={onClickRoom(room.id)}>입장</button>
           </div>
           <div>{room.Owner.nickname}</div>
           <div>{`방 인원 : ${room.Members.length}/${room.userLimit}`}</div>

@@ -37,7 +37,7 @@ const SignUp = () => {
           alert(error.response.data.message);
         });
     },
-    [email, nickname, password, confirmPassword, setSignUpSuccess]
+    [email, nickname, password, confirmPassword, setSignUpSuccess, history]
   );
 
   return (

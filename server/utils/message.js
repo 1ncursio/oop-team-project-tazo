@@ -6,6 +6,7 @@ const messages = {
   STATUS_403_EMAIL: '이미 사용 중인 이메일입니다.',
   STATUS_403_AUTH: '로그인하지 않은 사용자만 접근 가능합니다.',
   STATUS_403_ADMIN: '관리자만 접근할 수 있습니다',
+  STATUS_403_ROOMMEMBER: '이미 참여한 방이 존재합니다.',
 
   // 404 NOT FOUND
   STATUS_404_USER: '존재하지 않는 유저입니다.',

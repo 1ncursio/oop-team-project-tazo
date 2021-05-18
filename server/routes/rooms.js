@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { sequelize, Room, User, RoomChat, RoomMember } = require('../models');
-const { STATUS_404_ROOM, STATUS_404_USER } = require('../utils/message');
+const { STATUS_403_ROOMMEMBER, STATUS_404_ROOM, STATUS_404_USER } = require('../utils/message');
 const { isLoggedIn } = require('./middlewares');
 const { upload, uploadGCS, storage, bucket } = require('../utils/upload');
 
@@ -236,11 +236,10 @@ router.post('/:roomId/image', isLoggedIn, uploadGCS.array('image'), async (req, 
 });
 
 /* 멤버 추가 라우터 */
-// /rooms/${roomId}/members/${userData.id}
-router.post('/:roomId/members/:memberId', async (req, res, next) => {
+router.post('/:roomId/member', isLoggedIn, async (req, res, next) => {
   try {
-    const { roomId, memberId } = req.params;
-    // 유저가 존재하는지 확인 => 방이 존재하는지 확인 => 있다면 forbidden : 없다면 200
+    const { roomId } = req.params;
+    // 유저가 존재하는지 확인 => 방이 존재하는지 확인 =>
     const user = await User.findOne({ where: { id: req.user.id } });
     if (!user) {
       return res.status(404).json({ success: false, message: STATUS_404_USER });
@@ -251,8 +250,18 @@ router.post('/:roomId/members/:memberId', async (req, res, next) => {
       return res.status(404).json({ success: false, message: STATUS_404_ROOM });
     }
 
-    const member = await RoomMember.findOrCreate({ where: { id: req.user.id } });
-    // if (member)
+    const roomMember = await RoomMember.findOne({ where: { UserId: req.user.id } });
+    console.log(roomMember.RoomId, parseInt(roomId, 10));
+    if (roomMember && roomMember.RoomId !== parseInt(roomId, 10)) {
+      return res.status(403).json({ success: false, message: STATUS_403_ROOMMEMBER });
+    }
+
+    await room.addMembers(req.user.id);
+
+    const io = req.app.get('io');
+    io.of(`ws-room-${roomId}`).emit('enterMember', { user });
+
+    return res.status(200).json({ success: true });
   } catch (error) {
     console.error(error);
     next(error);
