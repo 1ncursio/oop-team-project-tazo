@@ -81,6 +81,21 @@ const Home = () => {
     [userRevalidate]
   );
 
+  const onTestUpload = useCallback(async (e) => {
+    e.preventDefault();
+    try {
+      console.log(e.target.files);
+      const imageFormData = new FormData();
+      [].forEach.call(e.target.files, (file) => {
+        imageFormData.append('image', file);
+      });
+      const { data } = await axios.post('/post/test/image', imageFormData);
+      console.log(data);
+    } catch (error) {
+      console.error(error);
+    }
+  }, []);
+
   return (
     <div css={layout}>
       <div>
@@ -130,6 +145,9 @@ const Home = () => {
         {postsData?.map((post: IPost, i: number) => (
           <PostList key={i} post={post} />
         ))}
+        <form>
+          <input type="file" onChange={onTestUpload} multiple />
+        </form>
       </div>
     </div>
   );

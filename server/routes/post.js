@@ -268,4 +268,32 @@ router.post('/:postId/reply', isLoggedIn, async (req, res, next) => {
   }
 });
 
+/* 이미지 업로드 테스트 라우터 */
+router.post('/test/image', uploadGCS.array('image'), async (req, res, next) => {
+  try {
+    for (let i = 0; i < req.files.length; i++) {
+      console.log('req.files[i].originalname', req.files[i].originalname);
+
+      const blob = bucket.file(`uploads/${Date.now()}_${req.files[i].originalname.replace(' ', '_')}`);
+      const blobStream = blob.createWriteStream();
+
+      blobStream.on('error', (err) => {
+        next(err);
+      });
+
+      blobStream.on('finish', async () => {
+        const publicUrl = `https://storage.googleapis.com/${bucket.name}/${blob.name}`;
+        console.log('publicUrl', publicUrl);
+
+        res.status(201).json({ success: true, publicUrl });
+      });
+
+      blobStream.end(req.files[i].buffer);
+    }
+  } catch (error) {
+    console.error(error);
+    next(error);
+  }
+});
+
 module.exports = router;

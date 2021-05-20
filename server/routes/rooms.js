@@ -120,22 +120,26 @@ router.delete('/:roomId', isLoggedIn, async (req, res, next) => {
 
 /* 채팅 라우터 */
 
-router.get('/:roomId/chat', isLoggedIn, async (req, res, next) => {
-  try {
-    const { roomId } = req.params;
+router.get(
+  '/:roomId/chat',
+  // isLoggedIn,
+  async (req, res, next) => {
+    try {
+      const { roomId } = req.params;
 
-    const room = await Room.findOne({ where: { id: roomId } });
-    if (!room) {
-      return res.status(404).json({ success: false, message: STATUS_404_ROOM });
+      const room = await Room.findOne({ where: { id: roomId } });
+      if (!room) {
+        return res.status(404).json({ success: false, message: STATUS_404_ROOM });
+      }
+      res
+        .status(200)
+        .json(await room.getRoomChats({ include: [{ model: User, attributes: ['id', 'nickname', 'image'] }] }));
+    } catch (error) {
+      console.error(error);
+      next(error);
     }
-    res
-      .status(200)
-      .json(await room.getRoomChats({ include: [{ model: User, attributes: ['id', 'nickname', 'image'] }] }));
-  } catch (error) {
-    console.error(error);
-    next(error);
   }
-});
+);
 
 router.post('/:roomId/chat', isLoggedIn, async (req, res, next) => {
   const transaction = await sequelize.transaction();
