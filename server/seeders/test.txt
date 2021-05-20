@@ -1,0 +1,16 @@
+INSERT INTO rooms (id, name, OwnerId, userLimit, origin, destination, startAt, gender, createdAt, updatedAt) VALUES (1, '테스트 방', 1, 4, '출발지', '도착지', NOW(), 'male', NOW(), NOW());
+
+INSERT INTO roomMembers (UserId, RoomId, loggedInAt, createdAt, updatedAt) VALUES (1, 1, NOW(), NOW(), NOW());
+
+INSERT INTO roomChats (id, UserId, RoomId, content, createdAt, updatedAt) VALUES (1, 1, 1, '채팅 테스트1', NOW(), NOW());
+INSERT INTO roomChats (id, UserId, RoomId, content, createdAt, updatedAt) VALUES (2, 1, 1, '채팅 테스트2', NOW(), NOW());
+INSERT INTO roomChats (id, UserId, RoomId, content, createdAt, updatedAt) VALUES (3, 1, 1, '채팅 테스트3', NOW(), NOW());
+INSERT INTO roomChats (id, UserId, RoomId, content, createdAt, updatedAt) VALUES (4, 1, 1, '채팅 테스트4', NOW(), NOW());
+INSERT INTO roomChats (id, UserId, RoomId, content, createdAt, updatedAt) VALUES (5, 1, 1, '채팅 테스트5', NOW(), NOW());
+INSERT INTO roomChats (id, UserId, RoomId, content, createdAt, updatedAt) VALUES (6, 2, 1, '채팅 테스트6', NOW(), NOW());
+INSERT INTO roomChats (id, UserId, RoomId, content, createdAt, updatedAt) VALUES (7, 2, 1, '채팅 테스트7', NOW(), NOW());
+INSERT INTO roomChats (id, UserId, RoomId, content, createdAt, updatedAt) VALUES (8, 2, 1, '채팅 테스트8', NOW(), NOW());
+INSERT INTO roomChats (id, UserId, RoomId, content, createdAt, updatedAt) VALUES (9, 1, 1, '채팅 테스트9', NOW(), NOW());
+INSERT INTO roomChats (id, UserId, RoomId, content, createdAt, updatedAt) VALUES (10, 1, 1, '채팅 테스트10', NOW(), NOW());
+INSERT INTO roomChats (id, UserId, RoomId, content, createdAt, updatedAt) VALUES (11, 2, 1, '채팅 테스트11', NOW(), NOW());
+INSERT INTO roomChats (id, UserId, RoomId, content, createdAt, updatedAt) VALUES (12, 1, 1, '채팅 테스트12', NOW(), NOW());
