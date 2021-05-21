@@ -30,6 +30,18 @@ router.get('/', async (req, res, next) => {
   }
 });
 
+router.get('/search', async (req, res, next) => {
+  try {
+    const { userLimit, origin, gender, destination, startAt } = req.query;
+    const room = await Room.findAll({ where: { userLimit, origin, gender, destination, startAt } });
+
+    res.status(200).json(room);
+  } catch (error) {
+    console.error(error);
+    next(error);
+  }
+});
+
 router.get('/:roomId', isLoggedIn, async (req, res, next) => {
   try {
     const { roomId } = req.params;
