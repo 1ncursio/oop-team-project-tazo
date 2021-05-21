@@ -267,12 +267,14 @@ router.post('/:roomId/member', isLoggedIn, async (req, res, next) => {
     }
 
     const roomMember = await RoomMember.findOne({ where: { UserId: req.user.id } });
-    console.log(roomMember.RoomId, parseInt(roomId, 10));
-    if (roomMember && roomMember.RoomId !== parseInt(roomId, 10)) {
-      return res.status(403).json({ success: false, message: STATUS_403_ROOMMEMBER });
+    if (!roomMember) {
+      await room.addMembers(req.user.id);
+    } else {
+      console.log(roomMember.RoomId, parseInt(roomId, 10));
+      if (roomMember.RoomId !== parseInt(roomId, 10)) {
+        return res.status(403).json({ success: false, message: STATUS_403_ROOMMEMBER });
+      }
     }
-
-    await room.addMembers(req.user.id);
 
     const io = req.app.get('io');
     io.of(`ws-room-${roomId}`).emit('enterMember', { user });
