@@ -197,6 +197,50 @@ router.post('/:roomId/chat', isLoggedIn, async (req, res, next) => {
   }
 });
 
+router.post('/:roomId/test/chat', async (req, res, next) => {
+  const transaction = await sequelize.transaction();
+  try {
+    const { roomId } = req.params;
+    const { content } = req.body;
+
+    const room = await Room.findOne({ where: { id: roomId } });
+    if (!room) {
+      return res.status(404).json({ success: false, message: STATUS_404_ROOM });
+    }
+
+    const chat = await RoomChat.create(
+      {
+        UserId: 1,
+        RoomId: roomId,
+        content,
+      },
+      { transaction }
+    );
+
+    await transaction.commit();
+
+    const chatWithUser = await RoomChat.findOne({
+      where: { id: chat.id },
+      include: [
+        {
+          model: User,
+          attributes: ['id', 'nickname', 'image'],
+        },
+      ],
+    });
+
+    const io = req.app.get('io');
+    // io.of('/ws-room').to(`/ws-room-${roomId}`).emit('chat', chatWithUser);
+    io.of(`/ws-room-${roomId}`).emit('chat', chatWithUser);
+
+    return res.status(200).json({ success: true, chat: chatWithUser });
+  } catch (error) {
+    console.error(error);
+    transaction.rollback();
+    next(error);
+  }
+});
+
 router.post('/:roomId/image', isLoggedIn, uploadGCS.array('image'), async (req, res, next) => {
   try {
     const { roomId } = req.params;
@@ -222,6 +266,60 @@ router.post('/:roomId/image', isLoggedIn, uploadGCS.array('image'), async (req, 
 
         const chat = await RoomChat.create({
           UserId: req.user.id,
+          RoomId: roomId,
+          content: publicUrl,
+        });
+
+        const chatWithUser = await RoomChat.findOne({
+          where: { id: chat.id },
+          include: [
+            {
+              model: User,
+              attributes: ['id', 'nickname', 'image'],
+            },
+          ],
+        });
+
+        const io = req.app.get('io');
+        // io.of('/ws-room').to(`/ws-room-${roomId}`).emit('chat', chatWithUser);
+        io.of(`/ws-room-${roomId}`).emit('chat', chatWithUser);
+      });
+
+      blobStream.end(req.files[i].buffer);
+    }
+
+    return res.status(200).json({ success: true });
+  } catch (error) {
+    console.error(error);
+    next(error);
+  }
+});
+
+router.post('/:roomId/test/image', uploadGCS.array('image'), async (req, res, next) => {
+  try {
+    const { roomId } = req.params;
+
+    const room = await Room.findOne({ where: { id: roomId } });
+    if (!room) {
+      return res.status(404).json({ success: false, message: STATUS_404_ROOM });
+    }
+
+    for (let i = 0; i < req.files.length; i++) {
+      console.log('req.files[i].originalname', req.files[i].originalname);
+
+      const blob = bucket.file(`uploads/${Date.now()}_${req.files[i].originalname.replace(' ', '_')}`);
+      const blobStream = blob.createWriteStream();
+
+      blobStream.on('error', (err) => {
+        next(err);
+      });
+
+      blobStream.on('finish', async () => {
+        const publicUrl = `https://storage.googleapis.com/${bucket.name}/${blob.name}`;
+        console.log('publicUrl', publicUrl);
+
+        const chat = await RoomChat.create({
+          UserId: 1,
           RoomId: roomId,
           content: publicUrl,
         });
