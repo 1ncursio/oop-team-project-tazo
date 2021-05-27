@@ -61,6 +61,25 @@ router.patch('/profile', isLoggedIn, async (req, res, next) => {
   }
 });
 
+// PATCH /user/test/nickname
+router.patch('/test/nickname', async (req, res, next) => {
+  try {
+    const { nickname } = req.body;
+
+    await User.update(
+      {
+        nickname,
+      },
+      { where: { id: 1 } }
+    );
+
+    return res.status(200).json({ success: true });
+  } catch (error) {
+    console.error(error);
+    next(error); // status 500
+  }
+});
+
 router.get('/', async (req, res, next) => {
   try {
     const user = await User.findOne({ where: { id: req.user.id } });
