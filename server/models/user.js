@@ -26,6 +26,10 @@ module.exports = class User extends Model {
           type: DataTypes.STRING(72),
           allowNull: true,
         },
+        token: {
+          type: DataTypes.STRING(6),
+          allowNull: false,
+        },
         provider: {
           type: DataTypes.STRING(10),
           defaultValue: 'local',

@@ -9,6 +9,8 @@ const path = require('path');
 const morgan = require('morgan');
 const dotenv = require('dotenv');
 const cors = require('cors');
+const redis = require('redis');
+const RedisStore = require('connect-redis')(session);
 const hpp = require('hpp');
 const helmet = require('helmet');
 
@@ -28,6 +30,10 @@ app.set('PORT', process.env.PORT || 80);
 const isProduction = process.env.NODE_ENV === 'production';
 
 dotenv.config();
+const redisClient = redis.createClient({
+  url: `redis://${process.env.REDIS_HOST}:${process.env.REDIS_PORT}`,
+  password: process.env.REDIS_PASSWORD,
+});
 
 db.sequelize
   .sync()
@@ -72,6 +78,7 @@ app.use(
       secure: isProduction,
       domain: isProduction && '.tazoapp.site',
     },
+    store: new RedisStore({ client: redisClient }),
   })
 );
 app.use(passport.initialize());

@@ -5,6 +5,8 @@ const bcrypt = require('bcrypt');
 const { User } = require('../models');
 const { isLoggedIn, isNotLoggedIn } = require('./middlewares');
 const { STATUS_403_EMAIL } = require('../utils/message');
+const generateRandomNumber = require('../utils/generateRandomNumber');
+const { smtpTransport, emailTemplate } = require('../utils/email');
 
 // GET /auth
 router.get('/', async (req, res, next) => {
@@ -30,19 +32,61 @@ router.get('/', async (req, res, next) => {
 router.post('/signup', isNotLoggedIn, async (req, res, next) => {
   try {
     const { email, nickname, password } = req.body;
+
+    if (email.split('@')[1] !== 'g.yju.ac.kr') {
+      return res
+        .status(403)
+        .json({ success: false, message: '영진전문대 구글 G Suite 이메일로만 가입하실 수 있습니다.' });
+    }
+
     const exUser = await User.findOne({ where: { email } });
     if (exUser) {
       return res.status(403).json({ success: false, message: STATUS_403_EMAIL });
     }
     const hashedPassword = await bcrypt.hash(password, 11);
 
+    const randomToken = generateRandomNumber();
+
     await User.create({
       email,
       nickname,
       password: hashedPassword,
+      token: randomToken,
+    });
+
+    await smtpTransport.sendMail({
+      from: process.env.NODEMAILER_USER,
+      to: email,
+      subject: '[타조] 이메일 인증을 완료해주세요.',
+      html: emailTemplate(randomToken),
     });
 
     return res.status(201).json({ success: true });
+  } catch (error) {
+    console.error(error);
+    next(error); // status 500
+  }
+});
+
+// PATCH /auth/email
+router.patch('/email', isLoggedIn, async (req, res, next) => {
+  try {
+    const { token } = req.body;
+
+    const user = await User.findOne({ where: { id: req.user.id, token } });
+
+    if (!user) {
+      return res.status(403).json({ success: false, message: '유효하지 않은 인증번호입니다.' });
+    }
+
+    await User.update(
+      {
+        status: 1, // authenticated
+      },
+      { where: { id: req.user.id } }
+    );
+
+    return res.status(200).json({ success: true });
   } catch (error) {
     console.error(error);
     next(error); // status 500
@@ -85,9 +129,13 @@ router.get('/logout', isLoggedIn, (req, res) => {
 
 router.get('/kakao', passport.authenticate('kakao'));
 
-router.get('/kakao/callback', passport.authenticate('kakao', { failureRedirect: 'http://localhost:7000' }), (req, res) => {
-  // res.status(200).json({ success: true, user: req.user });
-  res.redirect('http://localhost:7000');
-});
+router.get(
+  '/kakao/callback',
+  passport.authenticate('kakao', { failureRedirect: 'http://localhost:7000' }),
+  (req, res) => {
+    // res.status(200).json({ success: true, user: req.user });
+    res.redirect('http://localhost:7000');
+  }
+);
 
 module.exports = router;
