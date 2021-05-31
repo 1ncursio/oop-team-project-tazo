@@ -1,4 +1,5 @@
 const DataTypes = require('sequelize');
+const { DEFAULT_LATITUDE, DEFAULT_LONGITUDE } = require('../utils/defaultLatLng');
 const { Model } = DataTypes;
 
 module.exports = class Room extends Model {
@@ -13,13 +14,29 @@ module.exports = class Room extends Model {
           type: DataTypes.TINYINT,
           allowNull: false,
         },
-        origin: {
-          // 출발지
-          type: DataTypes.STRING(100),
+        originLat: {
+          // 출발지 위도
+          type: DataTypes.DECIMAL(17, 14),
+          defaultValue: DEFAULT_LATITUDE,
+          allowNull: false,
         },
-        destination: {
-          // 도착지
-          type: DataTypes.STRING(100),
+        originLng: {
+          // 출발지 경도
+          type: DataTypes.DECIMAL(17, 14),
+          defaultValue: DEFAULT_LONGITUDE,
+          allowNull: false,
+        },
+        destinationLat: {
+          // 도착지 위도
+          type: DataTypes.DECIMAL(17, 14),
+          defaultValue: DEFAULT_LATITUDE,
+          allowNull: false,
+        },
+        destinationLng: {
+          // 도착지 경도
+          type: DataTypes.DECIMAL(17, 14),
+          defaultValue: DEFAULT_LONGITUDE,
+          allowNull: false,
         },
         startAt: {
           // 만나는 시간
