@@ -15,7 +15,7 @@ router.get('/', async (req, res, next) => {
       const user = await User.findOne({
         where: { id: req.user.id },
         attributes: {
-          exclude: ['password'],
+          exclude: ['password', 'token'],
         },
       });
       res.status(200).json(user);
@@ -111,7 +111,7 @@ router.post('/login', isNotLoggedIn, (req, res, next) => {
       const passwordExcludedUser = await User.findOne({
         where: { id: user.id },
         attributes: {
-          exclude: ['password'],
+          exclude: ['password', 'token'],
         },
       });
       return res.status(200).json(passwordExcludedUser);

@@ -35,7 +35,7 @@ router.get('/test', async (req, res, next) => {
     const user = await User.findOne({
       where: { id: 1 },
       attributes: {
-        exclude: ['password'],
+        exclude: ['password', 'token'],
       },
     });
 
