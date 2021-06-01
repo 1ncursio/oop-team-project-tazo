@@ -1,9 +1,11 @@
 const express = require('express');
+const { body, validationResult, check } = require('express-validator');
 const router = express.Router();
 const { sequelize, Room, User, RoomChat, RoomMember } = require('../models');
 const { STATUS_403_ROOMMEMBER, STATUS_404_ROOM, STATUS_404_USER } = require('../utils/message');
 const { isLoggedIn } = require('./middlewares');
 const { upload, uploadGCS, storage, bucket } = require('../utils/upload');
+const { createRoomValidator } = require('../utils/validator');
 
 /* 방 라우터 */
 
@@ -72,15 +74,28 @@ router.get('/:roomId', isLoggedIn, async (req, res, next) => {
   }
 });
 
-router.post('/', isLoggedIn, async (req, res, next) => {
-  const { name, userLimit } = req.body;
+router.post('/', isLoggedIn, createRoomValidator, async (req, res, next) => {
+  // Finds the validation errors in this request and wraps them in an object with handy functions
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ success: false, errors: errors.array() });
+  }
+
+  const body = {};
+
+  Object.keys(req.body).forEach((key) => {
+    body[key] = req.body[key];
+  });
+
+  body['OwnerId'] = req.user.id;
+
   const transaction = await sequelize.transaction();
   try {
-    const exRoom = await Room.findOne({ where: { OwnerId: req.user.id }, transaction });
+    const exRoom = await Room.findOne({ where: { OwnerId: req.user.id } });
     if (exRoom) {
-      return res.status(403).send('방은 2개 이상 만들 수 없습니다.');
+      return res.status(403).json({ success: false, message: '방은 2개 이상 만들 수 없습니다.' });
     }
-    const room = await Room.create({ name, userLimit, OwnerId: req.user.id }, { transaction });
+    const room = await Room.create(body, { transaction });
     await room.addMembers(req.user.id, { transaction });
     await transaction.commit();
 
@@ -103,7 +118,46 @@ router.post('/', isLoggedIn, async (req, res, next) => {
     const io = req.app.get('io');
     // io.of(`/room-${room.id}`).emit('roomList', roomWithUser);
     io.of('/ws-room').emit('createRoom', roomWithUser);
-    return res.send('ok');
+    return res.status(200).json({ success: true });
+  } catch (error) {
+    console.error(error);
+    await transaction.rollback();
+    next(error);
+  }
+});
+
+router.post('/test', async (req, res, next) => {
+  const { name, userLimit } = req.body;
+  const transaction = await sequelize.transaction();
+  try {
+    const exRoom = await Room.findOne({ where: { OwnerId: 1 } });
+    if (exRoom) {
+      return res.status(403).json({ success: false, message: '방은 2개 이상 만들 수 없습니다.' });
+    }
+    const room = await Room.create({ name, userLimit, OwnerId: 1 }, { transaction });
+    await room.addMembers(1, { transaction });
+    await transaction.commit();
+
+    const roomWithUser = await Room.findOne({
+      where: { id: room.id },
+      include: [
+        {
+          model: User, // 포스트 작성자
+          as: 'Owner',
+          attributes: ['id', 'nickname', 'image'],
+        },
+        {
+          model: User,
+          as: 'Members',
+          attributes: ['id', 'nickname', 'image'],
+        },
+      ],
+    });
+
+    const io = req.app.get('io');
+    // io.of(`/room-${room.id}`).emit('roomList', roomWithUser);
+    io.of('/ws-room').emit('createRoom', roomWithUser);
+    return res.status(200).json({ success: true });
   } catch (error) {
     console.error(error);
     await transaction.rollback();

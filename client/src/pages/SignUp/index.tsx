@@ -7,6 +7,7 @@ import { useHistory } from 'react-router';
 const SignUp = () => {
   const [email, onChangeEmail] = useInput('');
   const [nickname, onChangeNickname] = useInput('');
+  const [gender, onChangeGender] = useInput('male');
   const [password, onChangePassword] = useInput('');
   const [confirmPassword, onChangeConfirmPassword] = useInput('');
   const [signUpSuccess, setSignUpSuccess] = useState(false);
@@ -26,6 +27,7 @@ const SignUp = () => {
           email,
           nickname,
           password,
+          gender,
         })
         .then((res) => {
           setSignUpSuccess(true);
@@ -37,7 +39,7 @@ const SignUp = () => {
           alert(error.response.data.message);
         });
     },
-    [email, nickname, password, confirmPassword, setSignUpSuccess, history]
+    [email, nickname, password, confirmPassword, setSignUpSuccess, history, gender]
   );
 
   return (
@@ -45,9 +47,15 @@ const SignUp = () => {
       <form onSubmit={onSignUp} css={layout}>
         <input type="text" placeholder="이메일" value={email} onChange={onChangeEmail} />
         <input type="text" placeholder="닉네임" value={nickname} onChange={onChangeNickname} />
+        <select value={gender} onChange={onChangeGender}>
+          <option value="male" selected>
+            남자
+          </option>
+          <option value="female">여자</option>
+        </select>
         <input type="password" placeholder="비밀번호" value={password} onChange={onChangePassword} />
         <input type="password" placeholder="비밀번호 확인" value={confirmPassword} onChange={onChangeConfirmPassword} />
-        <button type="submit">로그인</button>
+        <button type="submit">회원가입</button>
       </form>
       {signUpSuccess && <div>회원가입 성공!</div>}
     </>

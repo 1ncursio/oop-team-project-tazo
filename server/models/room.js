@@ -42,6 +42,7 @@ module.exports = class Room extends Model {
           // 만나는 시간
           type: DataTypes.DATE,
           defaultValue: DataTypes.NOW,
+          allowNull: false,
         },
         gender: {
           // 성별
