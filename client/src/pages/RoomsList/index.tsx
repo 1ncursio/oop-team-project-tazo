@@ -105,6 +105,7 @@ const RoomsList = () => {
         console.log(data);
       } catch (error) {
         console.error(error);
+        alert(error.response.data.message);
       }
     },
     [name, userLimit, gender, startAt, originLat, originLng, destinationLat, destinationLng]
