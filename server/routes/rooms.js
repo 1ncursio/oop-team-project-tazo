@@ -89,6 +89,8 @@ router.post('/', isLoggedIn, createRoomValidator, async (req, res, next) => {
 
   body['OwnerId'] = req.user.id;
 
+  console.log(body);
+
   const transaction = await sequelize.transaction();
   try {
     const exRoom = await Room.findOne({ where: { OwnerId: req.user.id } });
