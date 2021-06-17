@@ -145,22 +145,22 @@ app.use((err, req, res, next) => {
     apiError = createError(err);
   }
 
-  if (isProduction) {
-    const errObj = {
-      req: {
-        headers: req.headers,
-        query: req.query,
-        body: req.body,
-        route: req.route,
-      },
-      error: {
-        message: apiError.message,
-        stack: apiError.stack,
-        status: apiError.status,
-      },
-      user: req.user,
-    };
+  const errObj = {
+    req: {
+      headers: req.headers,
+      query: req.query,
+      body: req.body,
+      route: req.route,
+    },
+    error: {
+      message: apiError.message,
+      stack: apiError.stack,
+      status: apiError.status,
+    },
+    user: req.user,
+  };
 
+  if (isProduction) {
     logger.error(`${dayjs().format('YYYY-MM-DD HH:mm:ss')}`, errObj);
   } else {
     res.locals.message = apiError.message;
