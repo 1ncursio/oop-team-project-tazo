@@ -5,8 +5,16 @@ const session = require('express-session');
 const cookieParser = require('cookie-parser');
 const passport = require('passport');
 const passportConfig = require('./passport');
+const fs = require('fs');
 const path = require('path');
+
+// 로깅
+const createError = require('http-errors');
 const morgan = require('morgan');
+const { stream, logger } = require('./config/winston');
+const dayjs = require('dayjs');
+require('dayjs/locale/ko');
+
 const dotenv = require('dotenv');
 const cors = require('cors');
 const redis = require('redis');
@@ -56,7 +64,7 @@ passportConfig();
 
 if (isProduction) {
   app.set('trust proxy', 1);
-  app.use(morgan('combined'));
+  app.use(morgan('combined', { stream }));
   app.use(hpp());
   app.use(
     helmet({
@@ -78,7 +86,7 @@ if (isProduction) {
     })
   );
 } else {
-  app.use(morgan('dev'));
+  app.use(morgan('combined', { stream }));
   app.use(
     cors({
       origin: true,
@@ -123,6 +131,45 @@ app.use('/auth', authRouter);
 app.use('/post', postRouter);
 app.use('/posts', postsRouter);
 app.use('/rooms', roomsRouter);
+
+// catch 404 and forward to error handler
+app.use((req, res, next) => {
+  next(createError(404));
+});
+
+// error handler
+app.use((err, req, res, next) => {
+  let apiError = err;
+
+  if (!err.status) {
+    apiError = createError(err);
+  }
+
+  if (isProduction) {
+    const errObj = {
+      req: {
+        headers: req.headers,
+        query: req.query,
+        body: req.body,
+        route: req.route,
+      },
+      error: {
+        message: apiError.message,
+        stack: apiError.stack,
+        status: apiError.status,
+      },
+      user: req.user,
+    };
+
+    logger.error(`${dayjs().format('YYYY-MM-DD HH:mm:ss')}`, errObj);
+  } else {
+    res.locals.message = apiError.message;
+    res.locals.error = apiError;
+  }
+
+  // render the error page
+  return res.status(apiError.status).json({ message: apiError.message });
+});
 
 const server = app.listen(app.get('PORT'), () => {
   console.log(`server listening at ${app.get('PORT')} port...`);
