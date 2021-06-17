@@ -11,7 +11,10 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@admin-bro/express": "^3.1.0",
+    "@admin-bro/sequelize": "^1.2.1",
     "@google-cloud/storage": "^5.8.5",
+    "admin-bro": "^4.0.1",
     "bcrypt": "^5.0.1",
     "connect-redis": "^5.2.0",
     "cookie-parser": "^1.4.5",
@@ -19,6 +22,7 @@
     "cross-env": "^7.0.3",
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
+    "express-formidable": "^1.2.0",
     "express-session": "^1.17.1",
     "express-validator": "^6.11.1",
     "helmet": "^4.6.0",

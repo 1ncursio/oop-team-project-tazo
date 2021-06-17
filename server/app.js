@@ -13,6 +13,19 @@ const redis = require('redis');
 const RedisStore = require('connect-redis')(session);
 const hpp = require('hpp');
 const helmet = require('helmet');
+const db = require('./models');
+
+// 어드민
+const AdminBro = require('admin-bro');
+const AdminBroExpress = require('@admin-bro/express');
+const AdminBroSequelize = require('@admin-bro/sequelize');
+
+AdminBro.registerAdapter(AdminBroSequelize);
+
+const adminBro = new AdminBro({
+  databases: [db],
+  rootPath: '/admin',
+});
 
 const userRouter = require('./routes/user');
 const usersRouter = require('./routes/users');
@@ -20,8 +33,6 @@ const authRouter = require('./routes/auth');
 const postRouter = require('./routes/post');
 const postsRouter = require('./routes/posts');
 const roomsRouter = require('./routes/rooms');
-
-const db = require('./models');
 
 const webSocket = require('./socket');
 
@@ -91,6 +102,8 @@ app.get('/', (req, res) => {
 app.get('/oauth', passport.authenticate('kakao'), (req, res) => {
   res.send(`id: ${req.user.profile.id} / accessToken : ${req.user.accessToken}`);
 });
+
+app.use(adminBro.options.rootPath, AdminBroExpress.buildRouter(adminBro));
 
 app.use('/user', userRouter);
 app.use('/users', usersRouter);
