@@ -168,7 +168,7 @@ app.use((err, req, res, next) => {
   }
 
   // render the error page
-  return res.status(apiError.status).json({ message: apiError.message });
+  return res.status(apiError.status).json(errObj);
 });
 
 const server = app.listen(app.get('PORT'), () => {
