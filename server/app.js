@@ -15,6 +15,8 @@ const { stream, logger } = require('./config/winston');
 const dayjs = require('dayjs');
 require('dayjs/locale/ko');
 
+dayjs.locale('ko');
+
 const dotenv = require('dotenv');
 const cors = require('cors');
 const redis = require('redis');
@@ -161,7 +163,7 @@ app.use((err, req, res, next) => {
   };
 
   if (isProduction) {
-    logger.error(`${dayjs().format('YYYY-MM-DD HH:mm:ss')}`, errObj);
+    logger.error(dayjs().format('YYYY-MM-DD HH:mm:ss'), errObj);
   } else {
     res.locals.message = apiError.message;
     res.locals.error = apiError;
