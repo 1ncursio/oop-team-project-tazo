@@ -58,7 +58,19 @@ if (isProduction) {
   app.set('trust proxy', 1);
   app.use(morgan('combined'));
   app.use(hpp());
-  app.use(helmet());
+  app.use(
+    helmet({
+      contentSecurityPolicy: {
+        directives: {
+          defaultSrc: ["'self'"],
+          scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
+          styleSrc: ["'self'", 'https:', "'unsafe-inline'"],
+          baseUri: ["'self'"],
+          fontSrc: ["'self'", 'https:', 'data:'],
+        },
+      },
+    })
+  );
   app.use(
     cors({
       origin: true,
