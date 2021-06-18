@@ -84,7 +84,7 @@ router.patch('/email', async (req, res, next) => {
       {
         status: 1, // authenticated
       },
-      { where: { id: req.user.id } }
+      { where: { email } }
     );
 
     return res.status(200).json({ success: true });
