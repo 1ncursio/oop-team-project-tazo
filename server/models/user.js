@@ -8,7 +8,7 @@ module.exports = class User extends Model {
         email: {
           type: DataTypes.STRING(30), // STRING, TEXT, BOOLEAN, INTEGER, FLOAT, DATETIME
           allowNull: true,
-          unique: true, // 고유한 값
+          unique: 'email', // 고유한 값
         },
         nickname: {
           type: DataTypes.STRING(30),

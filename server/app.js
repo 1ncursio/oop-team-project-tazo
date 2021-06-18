@@ -57,7 +57,7 @@ const redisClient = redis.createClient({
 });
 
 db.sequelize
-  .sync()
+  .sync({ alter: true })
   .then(() => {
     console.log('MYSQL 연결 성공');
   })
