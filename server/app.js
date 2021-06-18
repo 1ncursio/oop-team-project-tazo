@@ -134,10 +134,10 @@ app.use('/post', postRouter);
 app.use('/posts', postsRouter);
 app.use('/rooms', roomsRouter);
 
-// catch 404 and forward to error handler
-app.use((req, res, next) => {
-  next(createError(404));
-});
+// // catch 404 and forward to error handler
+// app.use((req, res, next) => {
+//   next(createError(404));
+// });
 
 // error handler
 app.use((err, req, res, next) => {

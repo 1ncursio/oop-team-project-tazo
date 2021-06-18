@@ -6,6 +6,7 @@ const { STATUS_403_ROOMMEMBER, STATUS_404_ROOM, STATUS_404_USER } = require('../
 const { isLoggedIn } = require('./middlewares');
 const { upload, uploadGCS, storage, bucket } = require('../utils/upload');
 const { createRoomValidator, enterQueueValidator } = require('../utils/validator');
+const getDistanceFromLatLngInKm = require('../utils/getDistance');
 
 /* 방 라우터 */
 
@@ -440,6 +441,10 @@ router.post('/:roomId/member', isLoggedIn, async (req, res, next) => {
 
 /* 방 대기열 라우터 */
 
+// const waiting = {};
+// const waitingMap = req.app.get('waitingMap');
+let waitingQueue = [];
+
 // POST /rooms/queue
 router.post('/queue', enterQueueValidator, isLoggedIn, async (req, res, next) => {
   try {
@@ -449,12 +454,11 @@ router.post('/queue', enterQueueValidator, isLoggedIn, async (req, res, next) =>
         조건에 맞으면 큐에서 삭제하고 방을 파준다
         조건에 맞지 않으면 올때마다 처리
     */
-    /* POST하면 대기열에 유저가 추가된다
-      ㅁㄴㅇ
-   */
+    let isOriginYeoungJin = originLat && originLng;
+
     const waiting = {};
-    const waitingMap = req.app.get('waitingMap');
-    console.log('waitingMap', waitingMap);
+    // const waitingMap = req.app.get('waitingMap');
+    console.log('waitingQueue', waitingQueue);
 
     Object.keys(req.body).forEach((key) => {
       waiting[key] = req.body[key];
@@ -465,16 +469,46 @@ router.post('/queue', enterQueueValidator, isLoggedIn, async (req, res, next) =>
     ).toJSON();
 
     // queue 에 참가한 유저인지 판별
-    if (waitingMap.some((waitingData) => waitingData.User.id === user.id)) {
+    if (waitingQueue.some((waitingData) => waitingData.User.id === user.id)) {
       return res.status(403).json({ success: false, message: '이미 대기열에 참가한 유저입니다.' });
     }
 
-    // queue.some((v, i) => {
-
-    // });
     waiting['User'] = user;
 
-    req.app.set('waitingQueue', waitingMap.push(waiting));
+    const filteredWaitingQueue = waitingQueue.forEach((waitingData, index) => {
+      // gender와 거리를 만족하는 유저들을 포함한 배열
+      const distance = isOriginYeoungJin
+        ? getDistanceFromLatLngInKm(
+            waitingData.destinationLat,
+            waitingData.destinationLng,
+            waiting.destinationLat,
+            waiting.destinationLng
+          )
+        : getDistanceFromLatLngInKm(waitingData.originLat, waitingData.originLng, waiting.originLat, waiting.originLng);
+
+      // distance
+      if (waiting.gender !== 'none') {
+        if (distance <= 1) {
+          waitingQueue = waitingQueue.filter((v, i) => index !== i);
+        }
+      } else {
+      }
+    });
+    const filteredWaitingQueue2 = waitingQueue.filter((waitingData) => waitingData.User.gender !== user.gender);
+    // 유저와 성별이 같은 waitingQueue 대기자들을 추려낸다.
+    console.log('filteredWaitingQueue', filteredWaitingQueue);
+
+    const io = req.app.get('io');
+
+    if (filteredWaitingQueue.length !== 0) {
+      // 만약 성별이 같은 유저가 있따면
+      waitingQueue = waitingQueue.filter((v, i) => i !== index);
+      console.log('유저 매칭했따');
+      console.log(waitingQueue);
+      io.of('/ws-queue').emit('enterUser', {});
+    } else {
+      waitingQueue.push(waiting);
+    }
 
     res.status(200).json({ success: true, user });
   } catch (error) {
