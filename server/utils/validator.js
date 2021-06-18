@@ -22,6 +22,8 @@ const createRoomValidator = [
     .withMessage('gender 프로퍼티가 존재하지 않습니다.')
     .notEmpty()
     .isIn(['male', 'female', 'none']),
+  body('originName').exists().withMessage('originName 프로퍼티가 존재하지 않습니다.').notEmpty().isString(),
+  body('destinationName').exists().withMessage('destinationName 프로퍼티가 존재하지 않습니다.').notEmpty().isString(),
   body('startAt').exists().notEmpty().isISO8601().withMessage('startAt 값의 형식이 올바르지 않습니다.'),
   oneOf([
     [body('originLat').exists().notEmpty().isDecimal(), body('originLng').exists().notEmpty().isDecimal()],
