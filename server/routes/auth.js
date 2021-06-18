@@ -70,11 +70,11 @@ router.post('/signup', isNotLoggedIn, async (req, res, next) => {
 });
 
 // PATCH /auth/email
-router.patch('/email', isLoggedIn, async (req, res, next) => {
+router.patch('/email', async (req, res, next) => {
   try {
-    const { token } = req.body;
+    const { email, token } = req.body;
 
-    const user = await User.findOne({ where: { id: req.user.id, token } });
+    const user = await User.findOne({ where: { email, token } });
 
     if (!user) {
       return res.status(403).json({ success: false, message: '유효하지 않은 인증번호입니다.' });

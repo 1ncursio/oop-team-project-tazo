@@ -31,4 +31,13 @@ const createRoomValidator = [
   ]),
 ];
 
-module.exports = { createRoomValidator };
+const enterQueueValidator = [
+  body('originName').exists().withMessage('originName 프로퍼티가 존재하지 않습니다.').notEmpty().isString(),
+  body('destinationName').exists().withMessage('destinationName 프로퍼티가 존재하지 않습니다.').notEmpty().isString(),
+  oneOf([
+    [body('originLat').exists().notEmpty().isDecimal(), body('originLng').exists().notEmpty().isDecimal()],
+    [body('destinationLat').exists().notEmpty().isDecimal(), body('destinationLng').exists().notEmpty().isDecimal()],
+  ]),
+];
+
+module.exports = { createRoomValidator, enterQueueValidator };

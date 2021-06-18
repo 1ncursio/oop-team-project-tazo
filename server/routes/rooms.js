@@ -5,7 +5,7 @@ const { sequelize, Room, User, RoomChat, RoomMember } = require('../models');
 const { STATUS_403_ROOMMEMBER, STATUS_404_ROOM, STATUS_404_USER } = require('../utils/message');
 const { isLoggedIn } = require('./middlewares');
 const { upload, uploadGCS, storage, bucket } = require('../utils/upload');
-const { createRoomValidator } = require('../utils/validator');
+const { createRoomValidator, enterQueueValidator } = require('../utils/validator');
 
 /* 방 라우터 */
 
@@ -443,7 +443,7 @@ router.post('/:roomId/member', isLoggedIn, async (req, res, next) => {
 const queue = [];
 
 // POST /rooms/queue
-router.post('/queue', isLoggedIn, async (req, res, next) => {
+router.post('/queue', enterQueueValidator, isLoggedIn, async (req, res, next) => {
   try {
     /* 요청이 오면 유저가 큐에 있는지 확인
         이미 있으면 403, 없으면 통과
@@ -451,18 +451,29 @@ router.post('/queue', isLoggedIn, async (req, res, next) => {
         조건에 맞으면 큐에서 삭제하고 방을 파준다
         조건에 맞지 않으면 올때마다 처리
       */
-    const { gender } = req.body;
+    const waiting = {};
+
+    Object.keys(req.body).forEach((key) => {
+      waiting[key] = req.body[key];
+    });
+
     console.log('queue', queue);
     const user = await (
       await User.findOne({ where: { id: req.user.id }, attributes: ['id', 'nickname', 'image', 'gender'] })
     ).toJSON();
 
     // queue 에 참가한 유저인지 판별
-    if (queue.some((queueUser) => queueUser.id === user.id)) {
+    if (queue.some((waitingData) => waitingData.User.id === user.id)) {
       return res.status(403).json({ success: false, message: '이미 대기열에 참가한 유저입니다.' });
     }
 
-    queue.push(user);
+    // queue.some((v, i) => {
+
+    // });
+    waiting['User'] = user;
+
+    queue.push(waiting);
+
     res.status(200).json({ success: true, user });
   } catch (error) {
     console.error(error);
