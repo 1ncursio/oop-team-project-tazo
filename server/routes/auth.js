@@ -74,10 +74,12 @@ router.patch('/email', async (req, res, next) => {
   try {
     const { email, token } = req.body;
 
-    const user = await User.findOne({ where: { email, token } });
+    const user = await User.findOne({ where: { email, token, status: 0 } });
 
     if (!user) {
-      return res.status(403).json({ success: false, message: '유효하지 않은 인증번호입니다.' });
+      return res
+        .status(403)
+        .json({ success: false, message: '유효하지 않은 인증번호이거나 이미 인증된 이메일입니다.' });
     }
 
     await User.update(
