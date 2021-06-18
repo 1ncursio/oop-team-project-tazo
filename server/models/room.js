@@ -38,6 +38,16 @@ module.exports = class Room extends Model {
           defaultValue: DEFAULT_LONGITUDE,
           allowNull: false,
         },
+        originName: {
+          // 출발지 이름
+          type: DataTypes.STRING(50),
+          allowNull: false,
+        },
+        destinationName: {
+          // 도착지 이름
+          type: DataTypes.STRING(50),
+          allowNull: false,
+        },
         startAt: {
           // 만나는 시간
           type: DataTypes.DATE,

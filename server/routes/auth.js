@@ -31,7 +31,7 @@ router.get('/', async (req, res, next) => {
 // POST /auth/signup
 router.post('/signup', isNotLoggedIn, async (req, res, next) => {
   try {
-    const { email, nickname, password } = req.body;
+    const { email, nickname, gender, password } = req.body;
 
     if (email.split('@')[1] !== 'g.yju.ac.kr') {
       return res
@@ -50,6 +50,7 @@ router.post('/signup', isNotLoggedIn, async (req, res, next) => {
     await User.create({
       email,
       nickname,
+      gender,
       password: hashedPassword,
       token: randomToken,
     });

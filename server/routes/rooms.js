@@ -438,4 +438,36 @@ router.post('/:roomId/member', isLoggedIn, async (req, res, next) => {
   }
 });
 
+/* 방 대기열 라우터 */
+
+const queue = [];
+
+// POST /rooms/queue
+router.post('/queue', isLoggedIn, async (req, res, next) => {
+  try {
+    /* 요청이 오면 유저가 큐에 있는지 확인
+        이미 있으면 403, 없으면 통과
+        유저가 2명 이상일 때 거리와 조건이 맞는지 분기 처리
+        조건에 맞으면 큐에서 삭제하고 방을 파준다
+        조건에 맞지 않으면 올때마다 처리
+      */
+    const { gender } = req.body;
+    console.log('queue', queue);
+    const user = await (
+      await User.findOne({ where: { id: req.user.id }, attributes: ['id', 'nickname', 'image', 'gender'] })
+    ).toJSON();
+
+    // queue 에 참가한 유저인지 판별
+    if (queue.some((queueUser) => queueUser.id === user.id)) {
+      return res.status(403).json({ success: false, message: '이미 대기열에 참가한 유저입니다.' });
+    }
+
+    queue.push(user);
+    res.status(200).json({ success: true, user });
+  } catch (error) {
+    console.error(error);
+    next(error);
+  }
+});
+
 module.exports = router;
