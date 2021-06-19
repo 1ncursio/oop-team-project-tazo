@@ -329,60 +329,6 @@ router.post('/:roomId/image', isLoggedIn, uploadGCS.array('image'), async (req, 
   }
 });
 
-// router.post('/:roomId/test/image', uploadGCS.array('image'), async (req, res, next) => {
-//   try {
-//     const { roomId } = req.params;
-
-//     const room = await Room.findOne({ where: { id: roomId } });
-//     if (!room) {
-//       return res.status(404).json({ success: false, message: STATUS_404_ROOM });
-//     }
-
-//     for (let i = 0; i < req.files.length; i++) {
-//       console.log('req.files[i].originalname', req.files[i].originalname);
-
-//       const blob = bucket.file(`uploads/${Date.now()}_${req.files[i].originalname.replace(' ', '_')}`);
-//       const blobStream = blob.createWriteStream();
-
-//       blobStream.on('error', (err) => {
-//         next(err);
-//       });
-
-//       blobStream.on('finish', async () => {
-//         const publicUrl = `https://storage.googleapis.com/${bucket.name}/${blob.name}`;
-//         console.log('publicUrl', publicUrl);
-
-//         const chat = await RoomChat.create({
-//           UserId: 1,
-//           RoomId: roomId,
-//           content: publicUrl,
-//         });
-
-//         const chatWithUser = await RoomChat.findOne({
-//           where: { id: chat.id },
-//           include: [
-//             {
-//               model: User,
-//               attributes: ['id', 'nickname', 'image'],
-//             },
-//           ],
-//         });
-
-//         const io = req.app.get('io');
-//         // io.of('/ws-room').to(`/ws-room-${roomId}`).emit('chat', chatWithUser);
-//         io.of(`/ws-room-${roomId}`).emit('chat', chatWithUser);
-//       });
-
-//       blobStream.end(req.files[i].buffer);
-//     }
-
-//     return res.status(200).json({ success: true });
-//   } catch (error) {
-//     console.error(error);
-//     next(error);
-//   }
-// });
-
 /* 멤버 추가 라우터 */
 router.post('/:roomId/member', isLoggedIn, async (req, res, next) => {
   try {
@@ -507,9 +453,17 @@ router.post('/queue', isLoggedIn, enterQueueValidator, async (req, res, next) =>
     let exRoom;
     if (currentUser.gender === 'none') {
       // 유저의 gender
-      exRoom = await Room.findAll({ where: { gender: { [Op.or]: ['none', req.user.gender] } } });
+      exRoom = await Room.findAll({
+        where: {
+          gender: { [Op.or]: ['none', req.user.gender] },
+          include: [{ model: User, as: 'Members', attributes: ['id', 'nickname', 'image'] }],
+        },
+      });
     } else {
-      exRoom = await Room.findAll({ where: { gender: req.user.gender } });
+      exRoom = await Room.findAll({
+        where: { gender: req.user.gender },
+        include: [{ model: User, as: 'Members', attributes: ['id', 'nickname', 'image'] }],
+      });
     }
 
     if (exRoom) {
@@ -532,7 +486,7 @@ router.post('/queue', isLoggedIn, enterQueueValidator, async (req, res, next) =>
               parseFloat(currentUser.originLat),
               parseFloat(currentUser.originLng)
             );
-        if (distance <= 1) {
+        if (distance <= 1 && exRoom[i].Members.length === exRoom[i].userLimit) {
           await exRoom[i].addMembers(req.user.id);
           return res.status(200).json({ RoomId: exRoom[i].id });
         }
