@@ -42,61 +42,41 @@ router.patch('/image', isLoggedIn, uploadGCS.single('image'), async (req, res, n
 });
 
 // PATCH /user/test/image
-router.patch('/test/image', uploadGCS.single('image'), async (req, res, next) => {
-  try {
-    if (!req.file) {
-      return res.status(400).json({ success: false, message: '이미지가 업로드되지 않았습니다.' });
-    }
+// router.patch('/test/image', uploadGCS.single('image'), async (req, res, next) => {
+//   try {
+//     if (!req.file) {
+//       return res.status(400).json({ success: false, message: '이미지가 업로드되지 않았습니다.' });
+//     }
 
-    const blob = bucket.file(`uploads/${Date.now()}_${req.file.originalname.replace(' ', '_')}`);
-    const blobStream = blob.createWriteStream();
+//     const blob = bucket.file(`uploads/${Date.now()}_${req.file.originalname.replace(' ', '_')}`);
+//     const blobStream = blob.createWriteStream();
 
-    blobStream.on('error', (err) => {
-      next(err);
-    });
+//     blobStream.on('error', (err) => {
+//       next(err);
+//     });
 
-    blobStream.on('finish', async () => {
-      const publicUrl = `https://storage.googleapis.com/${bucket.name}/${blob.name}`;
+//     blobStream.on('finish', async () => {
+//       const publicUrl = `https://storage.googleapis.com/${bucket.name}/${blob.name}`;
 
-      await User.update(
-        {
-          image: publicUrl,
-        },
-        { where: { id: 1 } }
-      );
+//       await User.update(
+//         {
+//           image: publicUrl,
+//         },
+//         { where: { id: 1 } }
+//       );
 
-      res.status(200).json({ success: true, image: publicUrl });
-    });
+//       res.status(200).json({ success: true, image: publicUrl });
+//     });
 
-    blobStream.end(req.file.buffer);
-  } catch (error) {
-    console.error(error);
-    next(error); // status 500
-  }
-});
+//     blobStream.end(req.file.buffer);
+//   } catch (error) {
+//     console.error(error);
+//     next(error); // status 500
+//   }
+// });
 
-// PATCH /user/profile
-router.patch('/profile', isLoggedIn, async (req, res, next) => {
-  try {
-    const { nickname, introduction } = req.body;
-
-    await User.update(
-      {
-        nickname,
-        introduction,
-      },
-      { where: { id: req.user.id } }
-    );
-
-    return res.status(200).json({ success: true });
-  } catch (error) {
-    console.error(error);
-    next(error); // status 500
-  }
-});
-
-// PATCH /user/test/nickname
-router.patch('/test/nickname', async (req, res, next) => {
+// PATCH /user/nickname
+router.patch('/nickname', isLoggedIn, async (req, res, next) => {
   try {
     const { nickname } = req.body;
 
@@ -104,7 +84,7 @@ router.patch('/test/nickname', async (req, res, next) => {
       {
         nickname,
       },
-      { where: { id: 1 } }
+      { where: { id: req.user.id } }
     );
 
     return res.status(200).json({ success: true });
