@@ -136,7 +136,7 @@ router.post('/', isLoggedIn, createRoomValidator, async (req, res, next) => {
 /* 큐 퇴장 라우터 */
 router.delete('/queue', isLoggedIn, enterQueueValidator, async (req, res, next) => {
   try {
-    waitingQueue.filter((v) => v.User.id !== req.user.id);
+    waitingQueue = waitingQueue.filter((v) => v.User.id !== req.user.id);
     console.log('유저가 퇴장했습니다', waitingQueue);
     res.status(200).json({ success: true });
   } catch (error) {
