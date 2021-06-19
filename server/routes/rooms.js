@@ -430,7 +430,39 @@ router.post('/:roomId/member', isLoggedIn, async (req, res, next) => {
     }
 
     const io = req.app.get('io');
-    io.of(`ws-room-${roomId}`).emit('enterMember', { user });
+    io.of(`ws-room-${roomId}`).emit('enterMember', user);
+
+    return res.status(200).json({ success: true });
+  } catch (error) {
+    console.error(error);
+    next(error);
+  }
+});
+
+// 멤버 퇴장 라우터
+router.delete('/:roomId/member', isLoggedIn, async (req, res, next) => {
+  try {
+    const { roomId } = req.params;
+    // 유저가 존재하는지 확인 => 방이 존재하는지 확인 =>
+    const user = await User.findOne({ where: { id: req.user.id } });
+    if (!user) {
+      return res.status(404).json({ success: false, message: STATUS_404_USER });
+    }
+
+    const room = await Room.findOne({ where: { id: roomId } });
+    if (!room) {
+      return res.status(404).json({ success: false, message: STATUS_404_ROOM });
+    }
+
+    const roomMember = await RoomMember.findOne({ where: { UserId: req.user.id } });
+    if (roomMember) {
+      await room.removeMembers(req.user.id);
+    } else {
+      return res.status(403).json({ success: false, message: '아직 참여한 방이 없습니다.' });
+    }
+
+    const io = req.app.get('io');
+    io.of(`ws-room-${roomId}`).emit('leaveMember', user);
 
     return res.status(200).json({ success: true });
   } catch (error) {
@@ -454,14 +486,14 @@ router.post('/queue', enterQueueValidator, isLoggedIn, async (req, res, next) =>
         조건에 맞으면 큐에서 삭제하고 방을 파준다
         조건에 맞지 않으면 올때마다 처리
     */
-    let isOriginYeoungJin = originLat && originLng;
+    const { originLat, originLng } = req.body;
+    const isOriginYeoungJin = !!(originLat && originLng);
 
-    const waiting = {};
-    // const waitingMap = req.app.get('waitingMap');
-    console.log('waitingQueue', waitingQueue);
+    const currentUser = {};
+    console.log('입장 전 waitingQueue', waitingQueue);
 
     Object.keys(req.body).forEach((key) => {
-      waiting[key] = req.body[key];
+      currentUser[key] = req.body[key];
     });
 
     const user = await (
@@ -473,41 +505,61 @@ router.post('/queue', enterQueueValidator, isLoggedIn, async (req, res, next) =>
       return res.status(403).json({ success: false, message: '이미 대기열에 참가한 유저입니다.' });
     }
 
-    waiting['User'] = user;
+    currentUser['User'] = user;
+    const matchedUsers = [];
 
-    const filteredWaitingQueue = waitingQueue.forEach((waitingData, index) => {
+    waitingQueue.forEach((waitingData, index) => {
       // gender와 거리를 만족하는 유저들을 포함한 배열
       const distance = isOriginYeoungJin
         ? getDistanceFromLatLngInKm(
             waitingData.destinationLat,
             waitingData.destinationLng,
-            waiting.destinationLat,
-            waiting.destinationLng
+            currentUser.destinationLat,
+            currentUser.destinationLng
           )
-        : getDistanceFromLatLngInKm(waitingData.originLat, waitingData.originLng, waiting.originLat, waiting.originLng);
+        : getDistanceFromLatLngInKm(
+            waitingData.originLat,
+            waitingData.originLng,
+            currentUser.originLat,
+            currentUser.originLng
+          );
 
-      // distance
-      if (waiting.gender !== 'none') {
-        if (distance <= 1) {
-          waitingQueue = waitingQueue.filter((v, i) => index !== i);
+      // 조건을 만족하는 유저들을 matchedUsers 배열로 넘겨준다.
+      // 공통조건 : 1키로 미만
+      // 세부 조건 : none이면 none female male 매칭, male은 male 매칭, female은 female 매칭
+      if (distance <= 1) {
+        switch (currentUser) {
+          case 'none':
+            matchedUsers.push(waitingData);
+            waitingQueue = waitingQueue.filter((v, i) => v.User.id !== waitingData.User.id);
+            break;
+          case 'male':
+            if (waitingData.gender === 'male') {
+              matchedUsers.push(waitingData);
+              waitingQueue = waitingQueue.filter((v, i) => v.User.id !== waitingData.User.id);
+            }
+            break;
+          case 'female':
+            if (waitingData.gender === 'female') {
+              matchedUsers.push(waitingData);
+              waitingQueue = waitingQueue.filter((v, i) => v.User.id !== waitingData.User.id);
+            }
+            break;
+          default:
+            break;
         }
-      } else {
       }
     });
-    const filteredWaitingQueue2 = waitingQueue.filter((waitingData) => waitingData.User.gender !== user.gender);
-    // 유저와 성별이 같은 waitingQueue 대기자들을 추려낸다.
-    console.log('filteredWaitingQueue', filteredWaitingQueue);
 
     const io = req.app.get('io');
 
-    if (filteredWaitingQueue.length !== 0) {
-      // 만약 성별이 같은 유저가 있따면
-      waitingQueue = waitingQueue.filter((v, i) => i !== index);
+    if (matchedUsers.length !== 0) {
+      // 만약 매칭된 유저가 있다면
       console.log('유저 매칭했따');
-      console.log(waitingQueue);
-      io.of('/ws-queue').emit('enterUser', {});
+      console.log(matchedUsers);
+      io.of('/ws-queue').emit('enterUser', matchedUsers);
     } else {
-      waitingQueue.push(waiting);
+      waitingQueue.push(currentUser);
     }
 
     res.status(200).json({ success: true, user });
