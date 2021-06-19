@@ -389,9 +389,20 @@ router.post('/:roomId/member', isLoggedIn, async (req, res, next) => {
     const { roomId } = req.params;
     // 방이 존재하는지 확인
 
-    const room = await Room.findOne({ where: { id: roomId } });
+    const room = await Room.findOne({
+      where: { id: roomId },
+      include: {
+        model: User,
+        as: 'Members',
+        attributes: ['id', 'nickname', 'image'],
+      },
+    });
     if (!room) {
       return res.status(404).json({ success: false, message: STATUS_404_ROOM });
+    }
+
+    if (room.Members.length === room.userLimit) {
+      return res.status(403).json({ success: false, message: '방 인원이 모두 찼습니다.' });
     }
 
     const roomMember = await RoomMember.findOne({ where: { UserId: req.user.id } });
