@@ -133,6 +133,18 @@ router.post('/', isLoggedIn, createRoomValidator, async (req, res, next) => {
   }
 });
 
+/* 큐 퇴장 라우터 */
+router.delete('/queue', isLoggedIn, enterQueueValidator, async (req, res, next) => {
+  try {
+    waitingQueue.filter((v) => v.User.id !== req.user.id);
+    console.log('유저가 퇴장했습니다', waitingQueue);
+    res.status(200).json({ success: true });
+  } catch (error) {
+    console.error(error);
+    next(error);
+  }
+});
+
 router.delete('/:roomId', isLoggedIn, async (req, res, next) => {
   const transaction = await sequelize.transaction();
   try {
@@ -632,17 +644,6 @@ router.post('/queue', isLoggedIn, enterQueueValidator, async (req, res, next) =>
   } catch (error) {
     console.error(error);
     await transaction.rollback();
-    next(error);
-  }
-});
-
-router.delete('/queue', isLoggedIn, enterQueueValidator, async (req, res, next) => {
-  try {
-    waitingQueue.filter((v) => v.User.id !== req.user.id);
-    console.log('유저가 퇴장했습니다', waitingQueue);
-    res.status(200).json({ success: true });
-  } catch (error) {
-    console.error(error);
     next(error);
   }
 });
