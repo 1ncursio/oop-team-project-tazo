@@ -3,11 +3,13 @@ const { validationResult } = require('express-validator');
 const router = express.Router();
 const { sequelize, Room, User, RoomChat, RoomMember } = require('../models');
 const { STATUS_403_ROOMMEMBER, STATUS_404_ROOM, STATUS_404_USER } = require('../utils/message');
-const { isLoggedIn } = require('./middlewares');
+const { isLoggedIn, isNotLoggedIn } = require('./middlewares');
 const { uploadGCS, bucket } = require('../utils/upload');
 const { createRoomValidator, enterQueueValidator } = require('../utils/validator');
 const getDistanceFromLatLngInKm = require('../utils/getDistance');
 const { Op } = require('sequelize');
+
+let waitingQueue = [];
 
 /* 방 라우터 */
 
@@ -44,6 +46,10 @@ router.get('/search', async (req, res, next) => {
     console.error(error);
     next(error);
   }
+});
+
+router.get('/queue', (req, res, next) => {
+  res.status(200).json(waitingQueue);
 });
 
 router.get('/:roomId', isLoggedIn, async (req, res, next) => {
@@ -132,14 +138,17 @@ router.delete('/:roomId', isLoggedIn, async (req, res, next) => {
   const transaction = await sequelize.transaction();
   try {
     const { roomId } = req.params;
-    const room = await Room.findOne({ where: { id: roomId }, transaction });
+    const room = await Room.findOne({ where: { id: roomId, OwnerId: req.user.id }, transaction });
+    if (!room) {
+      return res.status(404).json({ success: false, message: '방이 존재하지 않거나 권한이 없습니다.' });
+    }
     await room.removeMembers(req.user.id, { transaction });
     await Room.destroy({ where: { id: roomId }, transaction });
     await transaction.commit();
 
     const io = req.app.get('io');
     io.of('/ws-room').emit('destroyRoom', room);
-    return res.send('ok');
+    return res.status(200).json({ success: true });
   } catch (error) {
     console.error(error);
     await transaction.rollback();
@@ -424,8 +433,6 @@ router.delete('/:roomId/member', isLoggedIn, async (req, res, next) => {
 
 /* 방 대기열 라우터 */
 
-let waitingQueue = [];
-
 // POST /rooms/queue
 router.post('/queue', isLoggedIn, enterQueueValidator, async (req, res, next) => {
   const errors = validationResult(req);
@@ -604,6 +611,17 @@ router.post('/queue', isLoggedIn, enterQueueValidator, async (req, res, next) =>
   } catch (error) {
     console.error(error);
     await transaction.rollback();
+    next(error);
+  }
+});
+
+router.delete('/queue', isLoggedIn, enterQueueValidator, async (req, res, next) => {
+  try {
+    waitingQueue.filter((v) => v.User.id !== req.user.id);
+    console.log('유저가 퇴장했습니다', waitingQueue);
+    res.status(200).json({ success: true });
+  } catch (error) {
+    console.error(error);
     next(error);
   }
 });
