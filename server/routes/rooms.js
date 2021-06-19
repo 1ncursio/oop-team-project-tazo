@@ -8,8 +8,7 @@ const { uploadGCS, bucket } = require('../utils/upload');
 const { createRoomValidator, enterQueueValidator } = require('../utils/validator');
 const getDistanceFromLatLngInKm = require('../utils/getDistance');
 const { Op } = require('sequelize');
-
-let waitingQueue = [];
+let waitingQueue = require('../utils/waitingQueue');
 
 /* 방 라우터 */
 
@@ -530,50 +529,55 @@ router.post('/queue', isLoggedIn, enterQueueValidator, async (req, res, next) =>
         waitingData,
         currentUser,
       });
-      /*
+      if (
+        (waitingData.originName === '영진대' && currentUser.originName === '영진대') ||
+        (waitingData.destinationName === '영진대' && currentUser.destinationName === '영진대')
+      ) {
+        /*
         출발지가 영진이면 각각의 도착지의 거리를 계산
         도착지가 영진이면 각각의 출발지의 거리를 계산
       */
-      const distance = isOriginYeoungJin
-        ? getDistanceFromLatLngInKm(
-            parseFloat(waitingData.destinationLat),
-            parseFloat(waitingData.destinationLng),
-            parseFloat(currentUser.destinationLat),
-            parseFloat(currentUser.destinationLng)
-          )
-        : getDistanceFromLatLngInKm(
-            parseFloat(waitingData.originLat),
-            parseFloat(waitingData.originLng),
-            parseFloat(currentUser.originLat),
-            parseFloat(currentUser.originLng)
-          );
-      console.log('distance', distance);
+        const distance = isOriginYeoungJin
+          ? getDistanceFromLatLngInKm(
+              parseFloat(waitingData.destinationLat),
+              parseFloat(waitingData.destinationLng),
+              parseFloat(currentUser.destinationLat),
+              parseFloat(currentUser.destinationLng)
+            )
+          : getDistanceFromLatLngInKm(
+              parseFloat(waitingData.originLat),
+              parseFloat(waitingData.originLng),
+              parseFloat(currentUser.originLat),
+              parseFloat(currentUser.originLng)
+            );
+        console.log('distance', distance);
 
-      /*
+        /*
         조건을 만족하는 유저들을 matchedUsers 배열로 넘겨준다.
         공통조건 : 1키로 미만
         세부 조건 : none이면 none female male 매칭, male은 male 매칭, female은 female 매칭
       */
-      if (distance <= 1) {
-        switch (currentUser.gender) {
-          case 'none':
-            matchedUsers.push(waitingData);
-            waitingQueue = waitingQueue.filter((v, i) => v.User.id !== waitingData.User.id);
-            break;
-          case 'male':
-            if (waitingData.User.gender === 'male') {
+        if (distance <= 1) {
+          switch (currentUser.gender) {
+            case 'none':
               matchedUsers.push(waitingData);
               waitingQueue = waitingQueue.filter((v, i) => v.User.id !== waitingData.User.id);
-            }
-            break;
-          case 'female':
-            if (waitingData.User.gender === 'female') {
-              matchedUsers.push(waitingData);
-              waitingQueue = waitingQueue.filter((v, i) => v.User.id !== waitingData.User.id);
-            }
-            break;
-          default:
-            break;
+              break;
+            case 'male':
+              if (waitingData.User.gender === 'male') {
+                matchedUsers.push(waitingData);
+                waitingQueue = waitingQueue.filter((v, i) => v.User.id !== waitingData.User.id);
+              }
+              break;
+            case 'female':
+              if (waitingData.User.gender === 'female') {
+                matchedUsers.push(waitingData);
+                waitingQueue = waitingQueue.filter((v, i) => v.User.id !== waitingData.User.id);
+              }
+              break;
+            default:
+              break;
+          }
         }
       }
     });
