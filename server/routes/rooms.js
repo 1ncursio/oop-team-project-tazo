@@ -474,7 +474,7 @@ router.post('/queue', isLoggedIn, enterQueueValidator, async (req, res, next) =>
     */
 
     const { originLat, originLng, originName } = req.body;
-    const isOriginYeoungJin = !!originName;
+    const isOriginYeoungJin = originName === '영진대';
 
     let exRoom;
     if (currentUser.gender === 'none') {
