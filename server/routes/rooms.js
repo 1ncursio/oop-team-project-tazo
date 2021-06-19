@@ -138,7 +138,7 @@ router.delete('/:roomId', isLoggedIn, async (req, res, next) => {
   const transaction = await sequelize.transaction();
   try {
     const { roomId } = req.params;
-    const room = await Room.findOne({ where: { id: roomId, OwnerId: req.user.id }, transaction });
+    const room = await Room.findOne({ where: { id: roomId, OwnerId: req.user.id } });
     if (!room) {
       return res.status(404).json({ success: false, message: '방이 존재하지 않거나 권한이 없습니다.' });
     }
@@ -215,7 +215,7 @@ router.post('/:roomId/chat', isLoggedIn, async (req, res, next) => {
     return res.status(200).json({ success: true, chat: chatWithUser });
   } catch (error) {
     console.error(error);
-    transaction.rollback();
+    await transaction.rollback();
     next(error);
   }
 });
@@ -259,7 +259,7 @@ router.post('/:roomId/chat', isLoggedIn, async (req, res, next) => {
 //     return res.status(200).json({ success: true, chat: chatWithUser });
 //   } catch (error) {
 //     console.error(error);
-//     transaction.rollback();
+//     await transaction.rollback();
 //     next(error);
 //   }
 // });
@@ -615,6 +615,7 @@ router.post('/queue', isLoggedIn, enterQueueValidator, async (req, res, next) =>
       io.of('/ws-queue').emit('enterUser', matchedUsersId);
     } else {
       waitingQueue.push(currentUser);
+      await transaction.commit();
     }
 
     res.status(200).json({ success: true });
