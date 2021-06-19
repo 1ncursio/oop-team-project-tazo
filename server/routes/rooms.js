@@ -473,8 +473,8 @@ router.post('/queue', isLoggedIn, enterQueueValidator, async (req, res, next) =>
         조건에 맞지 않으면 올때마다 처리
     */
 
-    const { originLat, originLng } = req.body;
-    const isOriginYeoungJin = !!(originLat && originLng);
+    const { originLat, originLng, originName } = req.body;
+    const isOriginYeoungJin = !!originName;
 
     let exRoom;
     if (currentUser.gender === 'none') {
