@@ -511,6 +511,7 @@ router.post('/queue', isLoggedIn, enterQueueValidator, async (req, res, next) =>
       }
     }
 
+    // 기존에 방에 있으면 RoomId가 반환되고
     const user = await (
       await User.findOne({ where: { id: req.user.id }, attributes: ['id', 'nickname', 'image', 'gender'] })
     ).toJSON();
@@ -589,7 +590,12 @@ router.post('/queue', isLoggedIn, enterQueueValidator, async (req, res, next) =>
       console.log('matchedUsers', matchedUsers);
 
       const matchedUsersId = matchedUsers.map((matchedUser) => ({ id: matchedUser.User.id }));
-
+      [
+        {
+          id: 1,
+        },
+        { id: 2 },
+      ];
       const roomNameUsingGender =
         currentUser.gender === 'none' ? '아무나' : currentUser.gender === 'male' ? '남자만' : '여자만';
 
@@ -612,7 +618,7 @@ router.post('/queue', isLoggedIn, enterQueueValidator, async (req, res, next) =>
       // await room.addMembers(req.user.id, { transaction });
       await transaction.commit();
 
-      io.of('/ws-queue').emit('enterUser', matchedUsersId);
+      io.of('/ws-queue').emit('enterUser', { RoomId: room.id, matchedUsersId });
     } else {
       waitingQueue.push(currentUser);
       await transaction.commit();
