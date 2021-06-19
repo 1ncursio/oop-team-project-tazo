@@ -385,7 +385,7 @@ router.post('/:roomId/member', isLoggedIn, async (req, res, next) => {
     }
 
     const io = req.app.get('io');
-    io.of(`ws-room-${roomId}`).emit('enterMember', user);
+    // io.of(`ws-room-${roomId}`).emit('enterMember', user);
 
     return res.status(200).json({ success: true });
   } catch (error) {
@@ -413,7 +413,7 @@ router.delete('/:roomId/member', isLoggedIn, async (req, res, next) => {
     }
 
     const io = req.app.get('io');
-    io.of(`ws-room-${roomId}`).emit('leaveMember', user);
+    // io.of(`ws-room-${roomId}`).emit('leaveMember', user);
 
     return res.status(200).json({ success: true });
   } catch (error) {
@@ -435,6 +435,10 @@ router.post('/queue', isLoggedIn, enterQueueValidator, async (req, res, next) =>
 
   const currentUser = {};
   console.log('입장 전 waitingQueue', waitingQueue);
+
+  Object.keys(req.body).forEach((key) => {
+    currentUser[key] = req.body[key];
+  });
 
   const transaction = await sequelize.transaction();
   try {
@@ -489,10 +493,6 @@ router.post('/queue', isLoggedIn, enterQueueValidator, async (req, res, next) =>
         }
       }
     }
-
-    Object.keys(req.body).forEach((key) => {
-      currentUser[key] = req.body[key];
-    });
 
     const user = await (
       await User.findOne({ where: { id: req.user.id }, attributes: ['id', 'nickname', 'image', 'gender'] })
