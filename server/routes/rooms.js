@@ -405,6 +405,12 @@ router.post('/:roomId/member', isLoggedIn, async (req, res, next) => {
       return res.status(403).json({ success: false, message: '방 인원이 모두 찼습니다.' });
     }
 
+    if (room.gender !== 'none') {
+      if (room.gender !== req.user.gender) {
+        return res.status(403).json({ success: false, message: '해당 성별은 입장할 수 없습니다.' });
+      }
+    }
+
     const roomMember = await RoomMember.findOne({ where: { UserId: req.user.id } });
     if (!roomMember) {
       await room.addMembers(req.user.id);
