@@ -125,6 +125,7 @@ router.post('/', isLoggedIn, createRoomValidator, async (req, res, next) => {
     const io = req.app.get('io');
     // io.of(`/room-${room.id}`).emit('roomList', roomWithUser);
     io.of('/ws-room').emit('createRoom', roomWithUser);
+    console.log(`/ws-room 소켓으로 createRoom 이벤트 발송`);
     return res.status(200).json(roomWithUser);
   } catch (error) {
     console.error(error);
@@ -225,6 +226,7 @@ router.post('/:roomId/chat', isLoggedIn, async (req, res, next) => {
     const io = req.app.get('io');
     // io.of('/ws-room').to(`/ws-room-${roomId}`).emit('chat', chatWithUser);
     io.of(`/ws-room-${roomId}`).emit('chat', chatWithUser);
+    console.log(`/ws-room-${roomId} 소켓으로 chat 이벤트 발송`);
 
     return res.status(200).json({ success: true, chat: chatWithUser });
   } catch (error) {
@@ -276,6 +278,7 @@ router.post('/:roomId/image', isLoggedIn, uploadGCS.array('image'), async (req, 
         const io = req.app.get('io');
         // io.of('/ws-room').to(`/ws-room-${roomId}`).emit('chat', chatWithUser);
         io.of(`/ws-room-${roomId}`).emit('chat', chatWithUser);
+        console.log(`/ws-room-${roomId} 소켓으로 chat 이벤트 발송`);
       });
 
       blobStream.end(req.files[i].buffer);
@@ -333,6 +336,7 @@ router.post('/:roomId/member', isLoggedIn, async (req, res, next) => {
 
     const io = req.app.get('io');
     io.of(`ws-room-${roomId}`).emit('enterMember', user);
+    console.log(`/ws-room-${roomId} 소켓으로 enterMember 이벤트 발송`);
 
     return res.status(200).json({ success: true });
   } catch (error) {
@@ -372,6 +376,7 @@ router.delete('/:roomId/member', isLoggedIn, async (req, res, next) => {
         await transaction.commit();
 
         io.of(`/ws-room-${roomId}`).emit('destroyRoom', { success: true, message: '방이 삭제되었습니다.' });
+        console.log(`/ws-room-${roomId} 소켓으로 destroyRoom 이벤트 발송`);
         return res.status(200).json({ success: true, message: '남은 멤버가 없어서 방이 삭제되었습니다.' });
       }
 
@@ -387,6 +392,7 @@ router.delete('/:roomId/member', isLoggedIn, async (req, res, next) => {
     });
 
     io.of(`ws-room-${roomId}`).emit('leaveMember', user);
+    console.log(`/ws-room-${roomId} 소켓으로 leaveMember 이벤트 발송`);
     await transaction.commit();
 
     return res.status(200).json({ success: true });
@@ -593,6 +599,7 @@ router.post('/queue', isLoggedIn, enterQueueValidator, async (req, res, next) =>
       await transaction.commit();
 
       io.of('/ws-queue').emit('enterUser', { RoomId: room.id, matchedUsersId });
+      console.log(`/ws-queue 소켓으로 enterUser 이벤트 발송`);
     } else {
       waitingQueue.push(currentUser);
       await transaction.commit();
