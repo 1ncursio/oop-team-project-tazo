@@ -159,6 +159,7 @@ router.delete('/:roomId', isLoggedIn, async (req, res, next) => {
 
     const io = req.app.get('io');
     io.of('/ws-room').emit('destroyRoom', room);
+    io.of(`/ws-room-${roomId}`).emit('destroyRoom', { success: true, message: '방이 삭제되었습니다.' });
     return res.status(200).json({ success: true });
   } catch (error) {
     console.error(error);
