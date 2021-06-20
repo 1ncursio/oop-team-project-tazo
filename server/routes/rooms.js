@@ -197,6 +197,7 @@ router.post('/:roomId/chat', isLoggedIn, async (req, res, next) => {
 
     const room = await Room.findOne({ where: { id: roomId } });
     if (!room) {
+      await transaction.commit();
       return res.status(404).json({ success: false, message: STATUS_404_ROOM });
     }
 
