@@ -128,7 +128,7 @@ const RoomsList = () => {
             <span>{room.name}</span>
             <button onClick={onClickRoom(room.id)}>입장</button>
           </div>
-          <div>{room.Owner.nickname}</div>
+          {/* <div>{room.Owner.nickname}</div> */}
           <div>{`방 인원 : ${room.Members.length}/${room.userLimit}`}</div>
           {room.OwnerId === userData?.id && <button onClick={() => onDeleteRoom(room.id)}>방 삭제</button>}
         </div>
