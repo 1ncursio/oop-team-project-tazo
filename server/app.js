@@ -37,6 +37,23 @@ const adminBro = new AdminBro({
   rootPath: '/admin',
 });
 
+const ADMIN = {
+  email: process.env.ADMINBRO_EMAIL,
+  password: process.env.ADMINBRO_PASSWORD,
+};
+const adminRouter = AdminBroExpress.buildAuthenticatedRouter(adminBro, {
+  authenticate: async (email, password) => {
+    if (email === ADMIN.email && password === ADMIN.password) {
+      return ADMIN;
+    }
+    return null;
+  },
+  cookieName: 'adminbro',
+  cookiePassword: process.env.ADMINBRO_SECRET,
+});
+
+app.use(adminBro.options.rootPath, adminRouter);
+
 const userRouter = require('./routes/user');
 const authRouter = require('./routes/auth');
 const postRouter = require('./routes/post');
@@ -98,24 +115,7 @@ if (isProduction) {
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
-const ADMIN = {
-  email: process.env.ADMINBRO_EMAIL,
-  password: process.env.ADMINBRO_PASSWORD,
-};
-// const router = AdminBroExpress.buildAuthenticatedRouter(adminBro, {
-//   authenticate: async (email, password) => {
-//     if (email === ADMIN.email && password === ADMIN.password) {
-//       return ADMIN;
-//     }
-//     return null;
-//   },
-//   cookieName: 'adminbro',
-//   cookiePassword: 'somePassword',
-// });
 
-const router = AdminBroExpress.buildRouter(adminBro);
-
-app.use(adminBro.options.rootPath, router);
 app.use(cookieParser(process.env.COOKIE_SECRET));
 app.use(
   session({

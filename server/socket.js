@@ -2,13 +2,13 @@ const SocketIO = require('socket.io');
 let waitingQueue = require('./utils/waitingQueue');
 
 const onlineMap = {};
-// const waitingMap = {};
+const waitingMap = {};
 
 module.exports = (server, app) => {
   const io = SocketIO(server, { path: '/socket.io' });
   app.set('io', io);
   app.set('onlineMap', onlineMap);
-  // app.set('waitingMap', waitingMap);
+  app.set('waitingMap', waitingMap);
 
   const dynamicNsp = io.of(/^\/ws-.+$/).on('connect', (socket) => {
     const newNamespace = socket.nsp; // newNamespace.name === 'dynamic-101'
@@ -55,7 +55,15 @@ module.exports = (server, app) => {
   //   );
   // });
 
+  // io.of('/ws-queue').on('connect', socket => {
+  //   waitingMap[socket.id]
+  // });
+
   // io.of('/ws-queue').on('disconnect', () => {
   //   waitingQueue
+  // });
+
+  // app.get('/testas', (req, res) => {
+  //   return res.status(200).json({ success: true });
   // });
 };
