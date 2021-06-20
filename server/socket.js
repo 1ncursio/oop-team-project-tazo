@@ -39,18 +39,6 @@ module.exports = (server, app) => {
   //   socket.on(
   //     'enterQueue',
   //     ({ id, gender, originName, destinationName, originLat, originLng, destinationLat, destinationLng }) => {
-  //       if (
-  //         !id ||
-  //         !gender ||
-  //         !originName ||
-  //         !destinationName ||
-  //         !originLat ||
-  //         !originLng ||
-  //         !destinationLat ||
-  //         !destinationLng
-  //       ) {
-  //         return;
-  //       }
   //       waitingMap[socket.id] = {};
   //       waitingMap[socket.id]['UserId'] = id;
   //       waitingMap[socket.id]['originName'] = originName;

@@ -43,7 +43,7 @@ router.post('/signup', isNotLoggedIn, async (req, res, next) => {
     if (exUser) {
       return res.status(403).json({ success: false, message: STATUS_403_EMAIL });
     }
-    const hashedPassword = await bcrypt.hash(password, 11);
+    const hashedPassword = await bcrypt.hash(password, 5);
 
     const randomToken = generateRandomNumber();
 
