@@ -411,6 +411,8 @@ router.delete('/:roomId/member', isLoggedIn, async (req, res, next) => {
         await room.destroy({ transaction });
         await transaction.commit();
 
+        const io = req.app.get('io');
+        io.of(`/ws-room-${roomId}`).emit('destroyRoom', { success: true, message: '방이 삭제되었습니다.' });
         return res.status(200).json({ success: true, message: '남은 멤버가 없어서 방이 삭제되었습니다.' });
       }
 
