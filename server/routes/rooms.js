@@ -523,8 +523,10 @@ router.post('/queue', isLoggedIn, enterQueueValidator, async (req, res, next) =>
         if (distance <= 1) {
           switch (currentUser.gender) {
             case 'none':
-              matchedUsers.push(waitingData);
-              waitingQueue = waitingQueue.filter((v, i) => v.User.id !== waitingData.User.id);
+              if (waitingData.gender === 'none' || currentUser.gender === waitingData.User.gender) {
+                matchedUsers.push(waitingData);
+                waitingQueue = waitingQueue.filter((v, i) => v.User.id !== waitingData.User.id);
+              }
               break;
             case 'male':
               if (waitingData.User.gender === 'male') {

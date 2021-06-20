@@ -56,7 +56,7 @@ module.exports = class Room extends Model {
         },
         gender: {
           // 성별
-          type: DataTypes.STRING,
+          type: DataTypes.STRING(6),
           allowNull: false,
           defaultValue: 'male',
         },
