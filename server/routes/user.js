@@ -1,6 +1,5 @@
 const express = require('express');
 const router = express.Router();
-const path = require('path');
 const { User } = require('../models');
 const { STATUS_404_USER, STATUS_403_EMAIL } = require('../utils/message');
 const { isLoggedIn } = require('./middlewares');

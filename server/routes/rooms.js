@@ -2,8 +2,8 @@ const express = require('express');
 const { validationResult } = require('express-validator');
 const router = express.Router();
 const { sequelize, Room, User, RoomChat, RoomMember } = require('../models');
-const { STATUS_403_ROOMMEMBER, STATUS_404_ROOM, STATUS_404_USER } = require('../utils/message');
-const { isLoggedIn, isNotLoggedIn } = require('./middlewares');
+const { STATUS_403_ROOMMEMBER, STATUS_404_ROOM } = require('../utils/message');
+const { isLoggedIn } = require('./middlewares');
 const { uploadGCS, bucket } = require('../utils/upload');
 const { createRoomValidator, enterQueueValidator } = require('../utils/validator');
 const getDistanceFromLatLngInKm = require('../utils/getDistance');
@@ -151,6 +151,7 @@ router.delete('/:roomId', isLoggedIn, async (req, res, next) => {
     const { roomId } = req.params;
     const room = await Room.findOne({ where: { id: roomId, OwnerId: req.user.id } });
     if (!room) {
+      await transaction.commit();
       return res.status(404).json({ success: false, message: '방이 존재하지 않거나 권한이 없습니다.' });
     }
     await room.removeMembers(req.user.id, { transaction });
@@ -470,7 +471,7 @@ router.post('/queue', isLoggedIn, enterQueueValidator, async (req, res, next) =>
         조건에 맞지 않으면 올때마다 처리
     */
 
-    const { originLat, originLng, originName } = req.body;
+    const { originName } = req.body;
     const isOriginYeoungJin = originName === '영진대';
 
     let exRoom;
