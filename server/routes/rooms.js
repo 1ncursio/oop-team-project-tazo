@@ -98,7 +98,7 @@ router.post('/', isLoggedIn, createRoomValidator, async (req, res, next) => {
 
   const transaction = await sequelize.transaction();
   try {
-    const exMember = await RoomMember.findOne({ where: { User: req.user.id } });
+    const exMember = await RoomMember.findOne({ where: { UserId: req.user.id } });
     if (exMember) {
       return res.status(403).json({ success: false, message: '방은 2개 이상 참가할 수 없습니다.' });
     }
