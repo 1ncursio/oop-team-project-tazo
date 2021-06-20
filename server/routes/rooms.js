@@ -476,8 +476,8 @@ router.post('/queue', isLoggedIn, enterQueueValidator, async (req, res, next) =>
       exRoom = await Room.findAll({
         where: {
           gender: { [Op.or]: ['none', req.user.gender] },
-          include: [{ model: User, as: 'Members', attributes: ['id', 'nickname', 'image'] }],
         },
+        include: [{ model: User, as: 'Members', attributes: ['id', 'nickname', 'image'] }],
       });
     } else {
       exRoom = await Room.findAll({

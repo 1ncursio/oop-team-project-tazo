@@ -96,8 +96,26 @@ if (isProduction) {
 }
 
 app.use(express.static(path.join(__dirname, 'public')));
-app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+app.use(express.json());
+const ADMIN = {
+  email: process.env.ADMINBRO_EMAIL,
+  password: process.env.ADMINBRO_PASSWORD,
+};
+// const router = AdminBroExpress.buildAuthenticatedRouter(adminBro, {
+//   authenticate: async (email, password) => {
+//     if (email === ADMIN.email && password === ADMIN.password) {
+//       return ADMIN;
+//     }
+//     return null;
+//   },
+//   cookieName: 'adminbro',
+//   cookiePassword: 'somePassword',
+// });
+
+const router = AdminBroExpress.buildRouter(adminBro);
+
+app.use(adminBro.options.rootPath, router);
 app.use(cookieParser(process.env.COOKIE_SECRET));
 app.use(
   session({
@@ -122,8 +140,6 @@ app.get('/', (req, res) => {
 app.get('/oauth', passport.authenticate('kakao'), (req, res) => {
   res.send(`id: ${req.user.profile.id} / accessToken : ${req.user.accessToken}`);
 });
-
-app.use(adminBro.options.rootPath, AdminBroExpress.buildRouter(adminBro));
 
 app.use('/user', userRouter);
 app.use('/auth', authRouter);
