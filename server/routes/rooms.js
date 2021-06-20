@@ -361,6 +361,7 @@ router.delete('/:roomId/member', isLoggedIn, async (req, res, next) => {
     });
 
     if (!room) {
+      await transaction.commit();
       return res.status(404).json({ success: false, message: STATUS_404_ROOM });
     }
 
@@ -376,6 +377,7 @@ router.delete('/:roomId/member', isLoggedIn, async (req, res, next) => {
 
       await room.removeMembers(req.user.id);
     } else {
+      await transaction.commit();
       return res.status(403).json({ success: false, message: '아직 참여한 방이 없습니다.' });
     }
 
@@ -417,6 +419,7 @@ router.post('/queue', isLoggedIn, enterQueueValidator, async (req, res, next) =>
 
     const roomMember = await RoomMember.findOne({ where: { UserId: req.user.id } });
     if (roomMember) {
+      await transaction.commit();
       return res.status(403).json({ success: false, message: STATUS_403_ROOMMEMBER });
     }
 
@@ -468,6 +471,7 @@ router.post('/queue', isLoggedIn, enterQueueValidator, async (req, res, next) =>
             );
         if (distance <= 1 && exRoom[i].Members.length < exRoom[i].userLimit) {
           await exRoom[i].addMembers(req.user.id);
+          await transaction.commit();
           return res.status(200).json({ RoomId: exRoom[i].id });
         }
       }
