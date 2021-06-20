@@ -384,17 +384,35 @@ router.post('/:roomId/member', isLoggedIn, async (req, res, next) => {
 
 // 멤버 퇴장 라우터
 router.delete('/:roomId/member', isLoggedIn, async (req, res, next) => {
+  const transaction = await sequelize.transaction();
   try {
     const { roomId } = req.params;
     // 방이 존재하는지 확인
 
-    const room = await Room.findOne({ where: { id: roomId } });
+    const room = await Room.findOne({
+      where: { id: roomId },
+      include: [
+        {
+          model: User,
+          as: 'Members',
+          attributes: ['id', 'nickname', 'image'],
+        },
+      ],
+    });
+
     if (!room) {
       return res.status(404).json({ success: false, message: STATUS_404_ROOM });
     }
 
     const roomMember = await RoomMember.findOne({ where: { UserId: req.user.id } });
     if (roomMember) {
+      if (room.Members.length === 1) {
+        await room.destroy({ transaction });
+        await transaction.commit();
+
+        return res.status(200).json({ success: true, message: '남은 멤버가 없어서 방이 삭제되었습니다.' });
+      }
+
       await room.removeMembers(req.user.id);
     } else {
       return res.status(403).json({ success: false, message: '아직 참여한 방이 없습니다.' });
@@ -407,10 +425,12 @@ router.delete('/:roomId/member', isLoggedIn, async (req, res, next) => {
 
     const io = req.app.get('io');
     io.of(`ws-room-${roomId}`).emit('leaveMember', user);
+    await transaction.commit();
 
     return res.status(200).json({ success: true });
   } catch (error) {
     console.error(error);
+    await transaction.rollback();
     next(error);
   }
 });

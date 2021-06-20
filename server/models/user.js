@@ -18,10 +18,10 @@ module.exports = class User extends Model {
           type: DataTypes.STRING(200),
           allowNull: true,
         },
-        introduction: {
-          type: DataTypes.STRING(200),
-          allowNull: true,
-        },
+        // introduction: {
+        //   type: DataTypes.STRING(200),
+        //   allowNull: true,
+        // },
         password: {
           type: DataTypes.STRING(72),
           allowNull: true,
@@ -30,23 +30,26 @@ module.exports = class User extends Model {
           type: DataTypes.STRING(6),
           allowNull: false,
         },
-        provider: {
-          type: DataTypes.STRING(10),
-          defaultValue: 'local',
-        },
-        snsId: {
-          type: DataTypes.STRING(30),
-          allowNull: true,
-        },
+        // provider: {
+        //   type: DataTypes.STRING(10),
+        //   defaultValue: 'local',
+        // },
+        // snsId: {
+        //   type: DataTypes.STRING(30),
+        //   allowNull: true,
+        // },
         status: {
           type: DataTypes.TINYINT,
           // 0 : pending, 1 : authenticated
+          allowNull: false,
           defaultValue: 0,
         },
         gender: {
-          // 성별
-          type: DataTypes.STRING(10),
-          allowNull: true,
+          type: DataTypes.STRING(6),
+          allowNull: false,
+          validate: {
+            isIn: [['male', 'female']],
+          },
         },
         // token: {
         //   type: DataTypes.STRING(200),
@@ -70,8 +73,8 @@ module.exports = class User extends Model {
     );
   }
   static associate(db) {
-    db.User.hasMany(db.Post);
-    db.User.hasMany(db.PostComment);
+    // db.User.hasMany(db.Post);
+    // db.User.hasMany(db.PostComment);
     db.User.hasMany(db.RoomChat);
     db.User.hasOne(db.Room, { as: 'Owned', foreignKey: 'OwnerId' });
     db.User.belongsToMany(db.Room, { through: db.RoomMember, as: 'Rooms' });

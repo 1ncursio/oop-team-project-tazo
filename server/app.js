@@ -17,7 +17,7 @@ require('dayjs/locale/ko');
 
 dayjs.locale('ko');
 
-const dotenv = require('dotenv');
+require('dotenv').config();
 const cors = require('cors');
 const redis = require('redis');
 const RedisStore = require('connect-redis')(session);
@@ -38,7 +38,6 @@ const adminBro = new AdminBro({
 });
 
 const userRouter = require('./routes/user');
-const usersRouter = require('./routes/users');
 const authRouter = require('./routes/auth');
 const postRouter = require('./routes/post');
 const postsRouter = require('./routes/posts');
@@ -50,14 +49,13 @@ app.set('PORT', process.env.PORT || 80);
 
 const isProduction = process.env.NODE_ENV === 'production';
 
-dotenv.config();
 const redisClient = redis.createClient({
   url: `redis://${process.env.REDIS_HOST}:${process.env.REDIS_PORT}`,
   password: process.env.REDIS_PASSWORD,
 });
 
 db.sequelize
-  .sync()
+  .sync({ alter: true })
   .then(() => {
     console.log('MYSQL 연결 성공');
   })
@@ -128,7 +126,6 @@ app.get('/oauth', passport.authenticate('kakao'), (req, res) => {
 app.use(adminBro.options.rootPath, AdminBroExpress.buildRouter(adminBro));
 
 app.use('/user', userRouter);
-app.use('/users', usersRouter);
 app.use('/auth', authRouter);
 app.use('/post', postRouter);
 app.use('/posts', postsRouter);
