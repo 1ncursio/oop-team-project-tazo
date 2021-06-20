@@ -227,6 +227,8 @@ router.post('/:roomId/chat', isLoggedIn, async (req, res, next) => {
     // io.of('/ws-room').to(`/ws-room-${roomId}`).emit('chat', chatWithUser);
     io.of(`/ws-room-${roomId}`).emit('chat', chatWithUser);
     console.log(`/ws-room-${roomId} 소켓으로 chat 이벤트 발송`);
+    io.of(`/ws-room-${roomId}`).emit('chat2', chatWithUser);
+    console.log(`/ws-room-${roomId} 소켓으로 chat2 이벤트 발송`);
 
     return res.status(200).json({ success: true, chat: chatWithUser });
   } catch (error) {
@@ -279,6 +281,8 @@ router.post('/:roomId/image', isLoggedIn, uploadGCS.array('image'), async (req, 
         // io.of('/ws-room').to(`/ws-room-${roomId}`).emit('chat', chatWithUser);
         io.of(`/ws-room-${roomId}`).emit('chat', chatWithUser);
         console.log(`/ws-room-${roomId} 소켓으로 chat 이벤트 발송`);
+        io.of(`/ws-room-${roomId}`).emit('chat2', chatWithUser);
+        console.log(`/ws-room-${roomId} 소켓으로 chat2 이벤트 발송`);
       });
 
       blobStream.end(req.files[i].buffer);
