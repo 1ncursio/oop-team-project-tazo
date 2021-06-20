@@ -233,50 +233,6 @@ router.post('/:roomId/chat', isLoggedIn, async (req, res, next) => {
   }
 });
 
-// router.post('/:roomId/test/chat', async (req, res, next) => {
-//   const transaction = await sequelize.transaction();
-//   try {
-//     const { roomId } = req.params;
-//     const { content } = req.body;
-
-//     const room = await Room.findOne({ where: { id: roomId } });
-//     if (!room) {
-//       return res.status(404).json({ success: false, message: STATUS_404_ROOM });
-//     }
-
-//     const chat = await RoomChat.create(
-//       {
-//         UserId: 1,
-//         RoomId: roomId,
-//         content,
-//       },
-//       { transaction }
-//     );
-
-//     await transaction.commit();
-
-//     const chatWithUser = await RoomChat.findOne({
-//       where: { id: chat.id },
-//       include: [
-//         {
-//           model: User,
-//           attributes: ['id', 'nickname', 'image'],
-//         },
-//       ],
-//     });
-
-//     const io = req.app.get('io');
-//     // io.of('/ws-room').to(`/ws-room-${roomId}`).emit('chat', chatWithUser);
-//     io.of(`/ws-room-${roomId}`).emit('chat', chatWithUser);
-
-//     return res.status(200).json({ success: true, chat: chatWithUser });
-//   } catch (error) {
-//     console.error(error);
-//     await transaction.rollback();
-//     next(error);
-//   }
-// });
-
 router.post('/:roomId/image', isLoggedIn, uploadGCS.array('image'), async (req, res, next) => {
   try {
     const { roomId } = req.params;
@@ -390,6 +346,7 @@ router.delete('/:roomId/member', isLoggedIn, async (req, res, next) => {
   try {
     const { roomId } = req.params;
     // 방이 존재하는지 확인
+    const io = req.app.get('io');
 
     const room = await Room.findOne({
       where: { id: roomId },
@@ -412,7 +369,6 @@ router.delete('/:roomId/member', isLoggedIn, async (req, res, next) => {
         await room.destroy({ transaction });
         await transaction.commit();
 
-        const io = req.app.get('io');
         io.of(`/ws-room-${roomId}`).emit('destroyRoom', { success: true, message: '방이 삭제되었습니다.' });
         return res.status(200).json({ success: true, message: '남은 멤버가 없어서 방이 삭제되었습니다.' });
       }
@@ -427,7 +383,6 @@ router.delete('/:roomId/member', isLoggedIn, async (req, res, next) => {
       attributes: ['id', 'nickname', 'image'],
     });
 
-    const io = req.app.get('io');
     io.of(`ws-room-${roomId}`).emit('leaveMember', user);
     await transaction.commit();
 
