@@ -465,7 +465,7 @@ router.post('/queue', isLoggedIn, enterQueueValidator, async (req, res, next) =>
               parseFloat(currentUser.originLat),
               parseFloat(currentUser.originLng)
             );
-        if (distance <= 1 && exRoom[i].Members.length === exRoom[i].userLimit) {
+        if (distance <= 1 && exRoom[i].Members.length < exRoom[i].userLimit) {
           await exRoom[i].addMembers(req.user.id);
           return res.status(200).json({ RoomId: exRoom[i].id });
         }
