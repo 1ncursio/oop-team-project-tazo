@@ -16,11 +16,11 @@ router.get('/', async (req, res, next) => {
   try {
     const rooms = await Room.findAll({
       include: [
-        {
-          model: User, // 포스트 작성자
-          as: 'Owner',
-          attributes: ['id', 'nickname', 'image'],
-        },
+        // {
+        //   model: User, // 포스트 작성자
+        //   as: 'Owner',
+        //   attributes: ['id', 'nickname', 'image'],
+        // },
         {
           model: User,
           as: 'Members',
@@ -57,11 +57,11 @@ router.get('/:roomId', isLoggedIn, async (req, res, next) => {
     const room = await Room.findOne({
       where: { id: roomId },
       include: [
-        {
-          model: User, // 포스트 작성자
-          as: 'Owner',
-          attributes: ['id', 'nickname', 'image'],
-        },
+        // {
+        //   model: User, // 포스트 작성자
+        //   as: 'Owner',
+        //   attributes: ['id', 'nickname', 'image'],
+        // },
         {
           model: User,
           as: 'Members',
@@ -94,13 +94,13 @@ router.post('/', isLoggedIn, createRoomValidator, async (req, res, next) => {
     body[key] = req.body[key];
   });
 
-  body['OwnerId'] = req.user.id;
+  // body['OwnerId'] = req.user.id;
 
   const transaction = await sequelize.transaction();
   try {
-    const exRoom = await Room.findOne({ where: { OwnerId: req.user.id } });
-    if (exRoom) {
-      return res.status(403).json({ success: false, message: '방은 2개 이상 만들 수 없습니다.' });
+    const exMember = await RoomMember.findOne({ where: { User: req.user.id } });
+    if (exMember) {
+      return res.status(403).json({ success: false, message: '방은 2개 이상 참가할 수 없습니다.' });
     }
     const room = await Room.create(body, { transaction });
     await room.addMembers(req.user.id, { transaction });
@@ -109,11 +109,11 @@ router.post('/', isLoggedIn, createRoomValidator, async (req, res, next) => {
     const roomWithUser = await Room.findOne({
       where: { id: room.id },
       include: [
-        {
-          model: User, // 포스트 작성자
-          as: 'Owner',
-          attributes: ['id', 'nickname', 'image'],
-        },
+        // {
+        //   model: User, // 포스트 작성자
+        //   as: 'Owner',
+        //   attributes: ['id', 'nickname', 'image'],
+        // },
         {
           model: User,
           as: 'Members',
@@ -145,29 +145,29 @@ router.delete('/queue', isLoggedIn, enterQueueValidator, async (req, res, next) 
   }
 });
 
-router.delete('/:roomId', isLoggedIn, async (req, res, next) => {
-  const transaction = await sequelize.transaction();
-  try {
-    const { roomId } = req.params;
-    const room = await Room.findOne({ where: { id: roomId, OwnerId: req.user.id } });
-    if (!room) {
-      await transaction.commit();
-      return res.status(404).json({ success: false, message: '방이 존재하지 않거나 권한이 없습니다.' });
-    }
-    await room.removeMembers(req.user.id, { transaction });
-    await Room.destroy({ where: { id: roomId }, transaction });
-    await transaction.commit();
+// router.delete('/:roomId', isLoggedIn, async (req, res, next) => {
+//   const transaction = await sequelize.transaction();
+//   try {
+//     const { roomId } = req.params;
+//     const room = await RoomMember.findOne({ where: { id: roomId, OwnerId: req.user.id } });
+//     if (!room) {
+//       await transaction.commit();
+//       return res.status(404).json({ success: false, message: '방이 존재하지 않거나 권한이 없습니다.' });
+//     }
+//     await room.removeMembers(req.user.id, { transaction });
+//     await Room.destroy({ where: { id: roomId }, transaction });
+//     await transaction.commit();
 
-    const io = req.app.get('io');
-    io.of('/ws-room').emit('destroyRoom', room);
-    io.of(`/ws-room-${roomId}`).emit('destroyRoom', { success: true, message: '방이 삭제되었습니다.' });
-    return res.status(200).json({ success: true });
-  } catch (error) {
-    console.error(error);
-    await transaction.rollback();
-    next(error);
-  }
-});
+//     const io = req.app.get('io');
+//     io.of('/ws-room').emit('destroyRoom', room);
+//     io.of(`/ws-room-${roomId}`).emit('destroyRoom', { success: true, message: '방이 삭제되었습니다.' });
+//     return res.status(200).json({ success: true });
+//   } catch (error) {
+//     console.error(error);
+//     await transaction.rollback();
+//     next(error);
+//   }
+// });
 
 /* 채팅 라우터 */
 
@@ -573,7 +573,7 @@ router.post('/queue', isLoggedIn, enterQueueValidator, async (req, res, next) =>
           gender: currentUser.gender,
           originName: currentUser.originName,
           destinationName: currentUser.destinationName,
-          OwnerId: req.user.id,
+          // OwnerId: req.user.id,
         },
         { transaction }
       );
