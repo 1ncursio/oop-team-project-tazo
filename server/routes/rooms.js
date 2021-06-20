@@ -500,6 +500,7 @@ router.post('/queue', isLoggedIn, enterQueueValidator, async (req, res, next) =>
 
     // queue 에 참가한 유저인지 판별
     if (waitingQueue.some((waitingData) => waitingData.User.id === user.id)) {
+      await transaction.commit();
       return res.status(403).json({ success: false, message: '이미 대기열에 참가한 유저입니다.' });
     }
 
